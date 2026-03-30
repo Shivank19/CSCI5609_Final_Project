@@ -11,7 +11,7 @@ function ValenceChart({ data, inView }) {
   useEffect(() => {
     if (!data || !inView || drawn.current) return;
     drawn.current = true;
-    drawLine(svgRef.current, data, 'valence', '#f4a261', false, 'Valence');
+    drawLine(svgRef.current, data, 'valence', '#f4a261', false, 'Valence (positivity)');
   }, [data, inView]);
 
   return (
@@ -19,8 +19,8 @@ function ValenceChart({ data, inView }) {
       <p style={stepLabel}>Step 01</p>
       <h3 style={chartTitle}>Valence Is Falling</h3>
       <p style={chartDesc}>Songs have grown emotionally darker decade after decade. The happiness index of music has been in steady decline since the 1960s.</p>
-      <svg ref={svgRef} width="100%" height={240} />
-      <div style={{ ...annoStyle, color: '#f4a261' }}>Music is getting emotionally darker</div>
+      <svg ref={svgRef} width="100%" height={240} style={{ display: 'block', overflow: 'hidden' }} />
+      <div style={{ ...annoStyle, color: '#f4a261' }}>18% decline since the '60s</div>
     </div>
   );
 }
@@ -33,7 +33,7 @@ function LoudnessChart({ data, inView }) {
   useEffect(() => {
     if (!data || !inView || drawn.current) return;
     drawn.current = true;
-    drawLine(svgRef.current, data, 'loudness_norm', '#e9c46a', false, 'Loudness');
+    drawLine(svgRef.current, data, 'loudness_norm', '#e9c46a', false, 'Loudness (normalized)');
   }, [data, inView]);
 
   return (
@@ -41,8 +41,8 @@ function LoudnessChart({ data, inView }) {
       <p style={stepLabel}>Step 02</p>
       <h3 style={chartTitle}>Loudness Is Rising</h3>
       <p style={chartDesc}>The loudness wars are real. Modern production pushes everything louder. This is not just about volume — it changes the emotional texture of music.</p>
-      <svg ref={svgRef} width="100%" height={240} />
-      <div style={{ ...annoStyle, color: '#e9c46a' }}>Music is being pushed to higher loudness levels</div>
+      <svg ref={svgRef} width="100%" height={240} style={{ display: 'block', overflow: 'hidden' }} />
+      <div style={{ ...annoStyle, color: '#e9c46a' }}>34% growth since the '60s</div>
     </div>
   );
 }
@@ -63,8 +63,8 @@ function AcousticnessChart({ data, inView }) {
       <p style={stepLabel}>Step 03</p>
       <h3 style={chartTitle}>Acoustic Sound Has Collapsed</h3>
       <p style={chartDesc}>Instruments gave way to synthesizers. The warm resonance of acoustic instruments has nearly vanished from mainstream music.</p>
-      <svg ref={svgRef} width="100%" height={240} />
-      <div style={{ ...annoStyle, color: '#457b9d' }}>Music is going increasingly electronic</div>
+      <svg ref={svgRef} width="100%" height={240} style={{ display: 'block', overflow: 'hidden' }} />
+      <div style={{ ...annoStyle, color: '#457b9d' }}>65% decline since the '60s</div>
     </div>
   );
 }
@@ -154,6 +154,7 @@ function BigReveal({ data, inView }) {
         .attr('opacity', 1);
     });
 
+    // Annotation box
     svg.append('rect')
       .attr('x', x(1990))
       .attr('y', 10)
@@ -162,7 +163,7 @@ function BigReveal({ data, inView }) {
       .attr('fill', 'rgba(255,255,255,0.03)')
       .attr('stroke', 'rgba(255,255,255,0.08)')
       .attr('stroke-dasharray', '3,3');
- 
+
     svg.append('text')
       .attr('x', x(2005))
       .attr('y', height - 6)
@@ -171,7 +172,90 @@ function BigReveal({ data, inView }) {
       .attr('fill', 'rgba(232,232,240,0.3)')
       .attr('font-size', '10px')
       .text('GAP WIDENS →');
-      
+
+    // ── Crosshair tooltip overlay ──────────────────────────────────────────
+    const bisect = d3.bisector(d => d.year).left;
+
+    const crosshairLine = svg.append('line')
+      .attr('class', 'crosshair')
+      .attr('y1', 0).attr('y2', height)
+      .attr('stroke', 'rgba(255,255,255,0.18)')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '4,3')
+      .attr('pointer-events', 'none')
+      .style('visibility', 'hidden');
+
+    // One dot per field, updated on hover
+    const crosshairDots = fields.map(({ color }) =>
+      svg.append('circle')
+        .attr('r', 4)
+        .attr('fill', color)
+        .attr('stroke', '#0a0a0f')
+        .attr('stroke-width', 1.5)
+        .attr('pointer-events', 'none')
+        .style('visibility', 'hidden')
+    );
+
+    const revealTooltip = d3.select('body')
+      .selectAll('.reveal-tooltip')
+      .data([null])
+      .join('div')
+      .attr('class', 'reveal-tooltip')
+      .style('position', 'absolute')
+      .style('z-index', '200')
+      .style('visibility', 'hidden')
+      .style('padding', '10px 14px')
+      .style('background', 'rgba(10,10,15,0.95)')
+      .style('border', '1px solid rgba(255,255,255,0.1)')
+      .style('border-radius', '8px')
+      .style('color', '#e8e8f0')
+      .style('font-size', '12px')
+      .style('line-height', '1.9')
+      .style('pointer-events', 'none')
+      .style('box-shadow', '0 8px 24px rgba(0,0,0,0.5)');
+
+    // Invisible hit area across full chart
+    svg.append('rect')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('fill', 'none')
+      .attr('pointer-events', 'all')
+      .style('cursor', 'crosshair')
+      .on('mousemove', function (event) {
+        const [mx] = d3.pointer(event);
+        const yr = Math.round(x.invert(mx));
+        const idx = Math.min(bisect(data, yr), data.length - 1);
+        const d = data[idx];
+        if (!d) return;
+
+        const xPos = x(d.year);
+        crosshairLine
+          .attr('x1', xPos).attr('x2', xPos)
+          .style('visibility', 'visible');
+
+        crosshairDots.forEach((dot, i) => {
+          dot
+            .attr('cx', xPos)
+            .attr('cy', y(d[fields[i].key]))
+            .style('visibility', 'visible');
+        });
+
+        revealTooltip
+          .style('visibility', 'visible')
+          .style('left', (event.pageX + 16) + 'px')
+          .style('top',  (event.pageY - 60) + 'px')
+          .html(
+            `<strong style="color:#e8e8f0;letter-spacing:0.05em">${d.year}</strong><br/>` +
+            `<span style="color:#e9c46a">● Loudness&nbsp;&nbsp;&nbsp; ${(d.loudness_norm * 100).toFixed(1)}%</span><br/>` +
+            `<span style="color:#f4a261">● Valence&nbsp;&nbsp;&nbsp;&nbsp; ${(d.valence * 100).toFixed(1)}%</span><br/>` +
+            `<span style="color:#457b9d">● Acousticness ${(d.acousticness * 100).toFixed(1)}%</span>`
+          );
+      })
+      .on('mouseleave', () => {
+        crosshairLine.style('visibility', 'hidden');
+        crosshairDots.forEach(dot => dot.style('visibility', 'hidden'));
+        revealTooltip.style('visibility', 'hidden');
+      });
 
   }, [data, inView]);
 
@@ -179,7 +263,7 @@ function BigReveal({ data, inView }) {
     <div style={{ ...cardStyle, background: 'linear-gradient(135deg, rgba(26,26,46,0.9) 0%, rgba(20,15,30,0.9) 100%)', border: '1px solid rgba(244,162,97,0.2)' }}>
       <p style={{ ...stepLabel, color: '#e63946' }}>The Reveal</p>
       <h3 style={{ ...chartTitle, fontSize: '1.5rem' }}>All Three — Together</h3>
-      <p style={chartDesc}>When you overlay them: valence falls, loudness rises, acousticness collapses. An sonic contradiction: three lines diverging into a hollow, yet deafening paradox.</p>
+      <p style={chartDesc}>When you overlay them: valence falls, loudness rises, acousticness collapses. Three diverging lines forming a paradox — music that feels more intense, yet more hollow.</p>
       <svg ref={svgRef} width="100%" height={280} />
 
       <div style={styles.revealLegend}>
@@ -205,39 +289,45 @@ function drawLine(svgEl, data, key, color, area = false, label = '') {
   const width = totalW - margin.left - margin.right;
   const height = 240 - margin.top - margin.bottom;
 
-  // 1. Clear previous content
   d3.select(svgEl).selectAll('*').remove();
 
-  // 2. Initialize SVG and Scales
   const svg = d3.select(svgEl).append('g')
     .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // ── Defs: clip path + gradient ──────────────────────────────────────────
+  const defs = svg.append('defs');
+
+  defs.append('clipPath')
+    .attr('id', `clip-${key}`)
+    .append('rect')
+    .attr('width', width)
+    .attr('height', height);
+
+  const gradient = defs.append('linearGradient')
+    .attr('id', `grad-${key}`)
+    .attr('x1', '0%').attr('y1', '0%')
+    .attr('x2', '0%').attr('y2', '100%');
+
+  gradient.append('stop')
+    .attr('offset', '0%')
+    .attr('stop-color', color)
+    .attr('stop-opacity', 0.4);
+
+  gradient.append('stop')
+    .attr('offset', '100%')
+    .attr('stop-color', color)
+    .attr('stop-opacity', 0);
 
   const x = d3.scaleLinear().domain([1921, 2020]).range([0, width]);
   const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
 
-  // --- NEW: GRADIENT DEFINITION ---
-  const defs = svg.append("defs");
-  const gradient = defs.append("linearGradient")
-    .attr("id", `grad-${key}`) 
-    .attr("x1", "0%").attr("y1", "0%")
-    .attr("x2", "0%").attr("y2", "100%");
-
-  gradient.append("stop")
-    .attr("offset", "0%")
-    .attr("stop-color", color)
-    .attr("stop-opacity", 0.4);
-
-  gradient.append("stop")
-    .attr("offset", "100%")
-    .attr("stop-color", color)
-    .attr("stop-opacity", 0);
-
-  // 3. Draw Grid and Axes
+  // ── Grid ────────────────────────────────────────────────────────────────
   svg.append('g')
     .call(d3.axisLeft(y).ticks(4).tickSize(-width).tickFormat(''))
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('line').attr('stroke', 'rgba(255,255,255,0.05)'));
 
+  // ── Axes ────────────────────────────────────────────────────────────────
   svg.append('g').attr('transform', `translate(0,${height})`)
     .call(d3.axisBottom(x).tickFormat(d => `'${String(d).slice(2)}`).ticks(8))
     .call(g => g.selectAll('text').attr('fill', 'rgba(232,232,240,0.3)').attr('font-size', '10px'))
@@ -248,77 +338,39 @@ function drawLine(svgEl, data, key, color, area = false, label = '') {
     .call(g => g.select('.domain').remove())
     .call(g => g.selectAll('text').attr('fill', 'rgba(232,232,240,0.3)').attr('font-size', '10px'));
 
-  // --- NEW: AREA FILL (Drawn BEFORE the line) ---
+  // ── Clipped group: area + line + hover points ────────────────────────────
+  const chartGroup = svg.append('g').attr('clip-path', `url(#clip-${key})`);
+
+  // Area fill
   const areaGen = d3.area()
     .x(d => x(d.year))
     .y0(height)
     .y1(d => y(d[key]))
     .curve(d3.curveCatmullRom.alpha(0.5));
 
-  svg.append('path')
+  chartGroup.append('path')
     .datum(data)
     .attr('fill', `url(#grad-${key})`)
     .attr('d', areaGen)
-    .attr('opacity', 0) 
+    .attr('opacity', 0)
     .transition()
     .duration(2000)
     .attr('opacity', 1);
 
-  // 4. Draw the Line
+  // Line
   const lineGen = d3.line()
     .x(d => x(d.year))
     .y(d => y(d[key]))
     .curve(d3.curveCatmullRom.alpha(0.5));
 
-  const path = svg.append('path')
+  const path = chartGroup.append('path')
     .datum(data)
     .attr('fill', 'none')
     .attr('stroke', color)
     .attr('stroke-width', 2.5)
     .attr('d', lineGen);
 
-  // 5. Add Tooltip and Hover Points (Drawn on TOP of the line/area)
-  const tooltip = d3.select('body')
-    .selectAll('.d3-tooltip')
-    .data([null])
-    .join('div')
-    .attr('class', 'd3-tooltip')
-    .style('position', 'absolute')
-    .style('z-index', '10')
-    .style('visibility', 'hidden')
-    .style('padding', '8px')
-    .style('background', 'rgba(0,0,0,0.85)')
-    .style('color', '#fff')
-    .style('border-radius', '4px')
-    .style('font-size', '12px')
-    .style('pointer-events', 'none')
-
-  svg.selectAll('.hover-point')
-    .data(data)
-    .enter()
-    .append('circle')
-    .attr('class', 'hover-point')
-    .attr('cx', d => x(d.year))
-    .attr('cy', d => y(d[key]))
-    .attr('r', 6) // Made slightly larger for easier mobile tapping
-    .attr('fill', color)
-    .attr('opacity', 0) 
-    .style('pointer-events', 'all')
-    .on('mouseover', (event, d) => {
-      d3.select(event.currentTarget).transition().duration(100).attr('opacity', 1).attr('r', 8);
-      tooltip.style('visibility', 'visible')
-        .html(`<strong>${d.year}</strong><br/>${label}: ${(d[key] * 100).toFixed(1)}%`);
-    })
-    .on('mousemove', (event) => {
-      tooltip.style('top', (event.pageY - 45) + 'px')
-             .style('left', (event.pageX + 10) + 'px');
-    })
-    .on('mouseout', (event) => {
-      d3.select(event.currentTarget).transition().duration(100).attr('opacity', 0).attr('r', 6);
-      tooltip.style('visibility', 'hidden');
-    });
-
-  // Animate the line drawing
+  // Animate line draw
   const length = path.node().getTotalLength();
   path
     .attr('stroke-dasharray', length)
@@ -327,6 +379,66 @@ function drawLine(svgEl, data, key, color, area = false, label = '') {
     .duration(2000)
     .ease(d3.easeCubicInOut)
     .attr('stroke-dashoffset', 0);
+
+  // ── Tooltip (one shared div per key, avoids duplicates) ──────────────────
+  const tooltip = d3.select('body')
+    .selectAll(`.d3-tip-${key}`)
+    .data([null])
+    .join('div')
+    .attr('class', `d3-tip-${key}`)
+    .style('position', 'absolute')
+    .style('z-index', '200')
+    .style('visibility', 'hidden')
+    .style('padding', '8px 12px')
+    .style('background', 'rgba(10,10,15,0.95)')
+    .style('border', `1px solid ${color}44`)
+    .style('border-radius', '7px')
+    .style('color', '#e8e8f0')
+    .style('font-size', '12px')
+    .style('line-height', '1.7')
+    .style('pointer-events', 'none')
+    .style('box-shadow', '0 6px 20px rgba(0,0,0,0.5)');
+
+  // ── Hover points (inside chartGroup so clipPath applies) ─────────────────
+  // Use every ~2 years to keep point count reasonable without losing coverage
+  const hoverData = data.filter((_, i) => i % 2 === 0 || i === data.length - 1);
+
+  chartGroup.selectAll('.hover-point')
+    .data(hoverData)
+    .enter()
+    .append('circle')
+    .attr('class', 'hover-point')
+    .attr('cx', d => x(d.year))
+    .attr('cy', d => y(d[key]))
+    .attr('r', 7)              // invisible but large hit target
+    .attr('fill', color)
+    .attr('opacity', 0)
+    .style('pointer-events', 'all')
+    .style('cursor', 'crosshair')
+    .on('mouseover', function (event, d) {
+      d3.select(this)
+        .transition().duration(100)
+        .attr('opacity', 1)
+        .attr('r', 6);
+      tooltip
+        .style('visibility', 'visible')
+        .html(
+          `<strong style="color:${color}">${d.year}</strong><br/>` +
+          `${label}: <strong>${(d[key] * 100).toFixed(1)}%</strong>`
+        );
+    })
+    .on('mousemove', event => {
+      tooltip
+        .style('top',  (event.pageY - 52) + 'px')
+        .style('left', (event.pageX + 14) + 'px');
+    })
+    .on('mouseout', function () {
+      d3.select(this)
+        .transition().duration(150)
+        .attr('opacity', 0)
+        .attr('r', 7);
+      tooltip.style('visibility', 'hidden');
+    });
 }
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
@@ -358,7 +470,7 @@ export default function SadnessParadox({ data }) {
           <em>louder</em>, and less acoustic.
         </h2>
         <p className="section-body" style={{ marginBottom: '64px' }}>
-          These aren't random fluctuations. Three separate acoustic forces have been moving in concert — painting a portrait of how popular taste shifted across the century. The reveal unfolds in four steps. Hover over the charts do get additional details about the year and metric values.
+          These aren't random fluctuations. Three separate acoustic forces have been moving in concert — painting a portrait of how popular taste shifted across the century. The reveal unfolds in four steps.
         </p>
 
         <div style={styles.grid}>
