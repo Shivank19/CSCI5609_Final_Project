@@ -336,13 +336,14 @@ export default function ValenceBoxPlot({ data }) {
           style={{ marginBottom: '48px' }}
         >
           Popular music's happiness score 
-peaked wiht a median of 62.0% in the 1970s and 
+peaked with a median of 62.0% in the 1970s and 
 fell to a median of 44.6% by the 2010s — a 
 17-point decline over four 
 decades. The 2020s show a slight 
 recovery, with a median of 50%, but remains well 
 below the peak. Filtered to popular 
-tracks (popularity ≥ 60)        </p>
+tracks. (popularity ≥ 60) 
+Use the population slider to filter by popularity level. Hover over the boxplot to get details like median, quartiles, and outliers.</p>
 
         {/* ── Popularity filter ── */}
         <div style={filterWrap}>

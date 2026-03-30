@@ -358,7 +358,7 @@ export default function SadnessParadox({ data }) {
           <em>louder</em>, and less acoustic.
         </h2>
         <p className="section-body" style={{ marginBottom: '64px' }}>
-          These aren't random fluctuations. Three separate acoustic forces have been moving in concert — painting a portrait of how popular taste shifted across the century. The reveal unfolds in four steps.
+          These aren't random fluctuations. Three separate acoustic forces have been moving in concert — painting a portrait of how popular taste shifted across the century. The reveal unfolds in four steps. Hover over the charts do get additional details about the year and metric values.
         </p>
 
         <div style={styles.grid}>
