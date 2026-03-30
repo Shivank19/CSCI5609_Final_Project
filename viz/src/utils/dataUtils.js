@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 
 export async function loadData() {
-  const raw = await d3.csv('/spotify_clean.csv', d => ({
+  const raw = await d3.csv(`${process.env.PUBLIC_URL}/spotify_clean.csv`, d => ({
     valence:       +d.valence,
     year:          +d.year,
     acousticness:  +d.acousticness,
