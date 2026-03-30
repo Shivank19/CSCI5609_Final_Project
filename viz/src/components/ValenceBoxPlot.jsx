@@ -315,14 +315,6 @@ export default function ValenceBoxPlot({ data }) {
 
   const totalSongs = decadeStats.reduce((s, d) => s + d.count, 0);
 
-  const popularityLabels = {
-    0: 'All songs',
-    25: '≥ 25 — some traction',
-    50: '≥ 50 — moderate hit',
-    60: '≥ 60 — popular',
-    75: '≥ 75 — major hit',
-  };
-
   return (
     <section ref={ref} style={sectionStyle}>
       <div className="container">

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { useInView } from '../hooks/useScrollProgress';
-import { aggregateByYear, normalizeLoudness } from '../utils/dataUtils';
+import { normalizeLoudness } from '../utils/dataUtils';
 
 // ─── Step 1: Valence Decline ──────────────────────────────────────────────────
 function ValenceChart({ data, inView }) {
