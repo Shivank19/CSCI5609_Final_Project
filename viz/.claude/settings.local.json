@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/abhir/OneDrive/Desktop/CSCI5609_Final_Project/data_cleaned/**)",
+      "Read(//c/Users/abhir/OneDrive/Desktop/CSCI5609_Final_Project/**)"
+    ]
+  }
+}

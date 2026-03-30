@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Hero from './components/Hero';
 import SadnessParadox from './components/SadnessParadox';
 import ValenceBoxPlot from './components/ValenceBoxPlot';
+import LoudnessEvolution from './components/LoudnessEvolution';
 import { loadData } from './utils/dataUtils';
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
     <main>
       <Hero />
       <ValenceBoxPlot data={data} />
+      <LoudnessEvolution />
       <SadnessParadox data={data} />
     </main>
   );
