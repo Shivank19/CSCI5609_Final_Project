@@ -22,7 +22,8 @@ const KEEP_GENRES = [
 function parseGenres(raw) {
   if (!raw) return [];
   return raw
-    .replace(/[\[\]'"]/g, '')
+    // .replace(/[\[\]'"]/g, '')
+    .replace(/[[\]'"]/g, '')
     .split(',')
     .map(g => g.trim().toLowerCase())
     .filter(Boolean);
