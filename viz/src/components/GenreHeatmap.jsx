@@ -412,7 +412,7 @@ const DECADES = [1960, 1970, 1980, 1990, 2000, 2010, 2020];
 function parseList(raw) {
   if (!raw) return [];
   return raw
-    .replace(/[\[\]'"]/g, '')
+    .replace(/[[\]'"]/g, '')
     .split(',')
     .map(s => s.trim().toLowerCase())
     .filter(Boolean);
