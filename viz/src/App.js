@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Hero from "./components/Hero";
-import SadnessParadox from "./components/SadnessParadox";
-import ValenceBoxPlot from "./components/ValenceBoxPlot";
-import LoudnessEvolution from "./components/LoudnessEvolution";
+import ConsolidatedEvolution from "./components/ConsolidatedEvolution";
 import ParadoxScatter from "./components/ParadoxScatter";
 import GenreHeatmap from "./components/GenreHeatmap";
 import { loadData, loadGenreData } from "./utils/dataUtils";
@@ -58,9 +56,7 @@ export default function App() {
   return (
     <main>
       <Hero />
-      <ValenceBoxPlot data={data} />
-      <LoudnessEvolution />
-      <SadnessParadox data={data} />
+      <ConsolidatedEvolution data={data} genreData={genreData} />
       <ParadoxScatter data={data} />
       <GenreHeatmap data={data} genreData={genreData} />
     </main>
