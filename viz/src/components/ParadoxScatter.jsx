@@ -261,10 +261,7 @@ export default function RelationshipScatter({ data, popularity, genre }) {
           Music Got Sadder<br /><em>But More Compelling</em>
         </h2>
         <p className="section-body" style={{ marginBottom: 36 }}>
-          Each dot is a decade. The 1970s sit at the top — happiest and most acoustic era. Toggle
-          between the three views: danceability and loudness both rose as valence fell (the paradox),
-          while acousticness and valence fell together — suggesting a possible cause.
-          Hover any decade for its representative track.
+          Each dot represents a decade, mapping a clear trend: as valence declines, danceability and loudness rise. This reveals a compelling paradox — modern music is becoming sadder yet more energetic, suggesting a divorce between emotional tone and physical engagement. Hover to explore the defining sound of each decade.
         </p>
 
         <div style={styles.toggleRow}>
