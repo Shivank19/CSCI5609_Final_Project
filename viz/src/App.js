@@ -7,10 +7,11 @@ import ParadoxScatter from "./components/ParadoxScatter";
 // import GenreHeatmap from "./components/GenreHeatmap";
 import { loadData, loadGenreData } from "./utils/dataUtils";
 import DecadeExplorer from "./components/DecadeExplorer";
+import ConsolidatedEvolution from "./components/ConsolidatedEvolution";
 
 export default function App() {
   const [data, setData] = useState([]);
-  // const [genreData, setGenreData] = useState([]);
+  const [genreData, setGenreData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,7 +19,7 @@ export default function App() {
     Promise.all([loadData(), loadGenreData()])
       .then(([main, genre]) => {
         setData(main);
-        // setGenreData(genre);
+        setGenreData(genre);
         setLoading(false);
       })
       .catch((e) => {
@@ -59,9 +60,10 @@ export default function App() {
   return (
     <main>
       <Hero />
-      <ValenceBoxPlot data={data} />
+      {/* <ValenceBoxPlot data={data} />
       <LoudnessEvolution />
-      <SadnessParadox data={data} />
+      <SadnessParadox data={data} /> */}
+      <ConsolidatedEvolution data={data} genreData={genreData} />
       <ParadoxScatter data={data} />
       {/* <GenreHeatmap data={data} genreData={genreData} /> */}
       <DecadeExplorer />
