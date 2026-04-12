@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Hero from "./components/Hero";
-import SadnessParadox from "./components/SadnessParadox";
-import ValenceBoxPlot from "./components/ValenceBoxPlot";
-import LoudnessEvolution from "./components/LoudnessEvolution";
+// import SadnessParadox from "./components/SadnessParadox";
+// import ValenceBoxPlot from "./components/ValenceBoxPlot";
+// import LoudnessEvolution from "./components/LoudnessEvolution";
 import ParadoxScatter from "./components/ParadoxScatter";
 // import GenreHeatmap from "./components/GenreHeatmap";
 import { loadData, loadGenreData } from "./utils/dataUtils";
