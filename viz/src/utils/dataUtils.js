@@ -60,9 +60,9 @@ export function aggregateByDecade(data, fields) {
   return Array.from(byDecade.values()).sort((a, b) => a.decade - b.decade);
 }
 
-// Normalize loudness from ~[-60, 0] dB to [0, 1]
+// Normalize loudness from the project-wide display range [-20, 0] dB to [0, 1]
 export function normalizeLoudness(val) {
-  return Math.max(0, Math.min(1, (val + 60) / 60));
+  return Math.max(0, Math.min(1, (val + 20) / 20));
 }
 
 // New — loads data_w_genres.csv for the genre heatmap

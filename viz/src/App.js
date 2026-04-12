@@ -6,6 +6,7 @@ import LoudnessEvolution from "./components/LoudnessEvolution";
 import ParadoxScatter from "./components/ParadoxScatter";
 import GenreHeatmap from "./components/GenreHeatmap";
 import { loadData, loadGenreData } from "./utils/dataUtils";
+import DecadeExplorer from "./components/DecadeExplorer";
 
 export default function App() {
   const [data, setData] = useState([]);
@@ -62,7 +63,8 @@ export default function App() {
       <LoudnessEvolution />
       <SadnessParadox data={data} />
       <ParadoxScatter data={data} />
-      <GenreHeatmap data={data} genreData={genreData} />
+      {/* <GenreHeatmap data={data} genreData={genreData} /> */}
+      <DecadeExplorer />
     </main>
   );
 }
