@@ -114,7 +114,7 @@ export default function DecadeExplorer() {
     `,
         )
         .join(""),
-    [decadeData.length],
+    [decadeData],
   ); // eslint-disable-line
 
   return (

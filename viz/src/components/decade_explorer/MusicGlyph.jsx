@@ -93,7 +93,6 @@ export default function MusicGlyph({
 
   const notes = noteData.map(({ attr, cx, cy, stemX }, i) => {
     const gradId = `ng-${uid}-${i}`;
-    const glowId = `gg-${uid}-${i}`;
     return (
       <g key={attr.key}>
         <defs>

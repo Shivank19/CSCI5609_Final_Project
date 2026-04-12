@@ -4,13 +4,13 @@ import SadnessParadox from "./components/SadnessParadox";
 import ValenceBoxPlot from "./components/ValenceBoxPlot";
 import LoudnessEvolution from "./components/LoudnessEvolution";
 import ParadoxScatter from "./components/ParadoxScatter";
-import GenreHeatmap from "./components/GenreHeatmap";
+// import GenreHeatmap from "./components/GenreHeatmap";
 import { loadData, loadGenreData } from "./utils/dataUtils";
 import DecadeExplorer from "./components/DecadeExplorer";
 
 export default function App() {
   const [data, setData] = useState([]);
-  const [genreData, setGenreData] = useState([]);
+  // const [genreData, setGenreData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,7 +18,7 @@ export default function App() {
     Promise.all([loadData(), loadGenreData()])
       .then(([main, genre]) => {
         setData(main);
-        setGenreData(genre);
+        // setGenreData(genre);
         setLoading(false);
       })
       .catch((e) => {

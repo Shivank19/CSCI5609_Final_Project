@@ -109,7 +109,7 @@ export default function VinylDisc({
     }
 
     // Individual grooves
-    Array.from({ length: grooveCount }, (_, i) => {
+    Array.from({ length: grooveCount }).forEach((_, i) => {
       const gr = innerR + (i + 0.5) * grooveGap;
       const dark = i % 2 === 0;
       elements.push(
@@ -131,6 +131,7 @@ export default function VinylDisc({
     cx,
     cy,
     innerR,
+    outerR,
     grooveGap,
     grooveStroke,
     grooveBand,
