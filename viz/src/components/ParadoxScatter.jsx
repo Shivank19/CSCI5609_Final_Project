@@ -261,7 +261,7 @@ export default function RelationshipScatter({ data, popularity, genre }) {
           Music Got Sadder<br /><em>But More Compelling</em>
         </h2>
         <p className="section-body" style={{ marginBottom: 36 }}>
-          Each dot represents a decade, mapping a clear trend: as valence declines, danceability and loudness rise. This reveals a compelling paradox — modern music is becoming sadder yet more energetic, suggesting a divorce between emotional tone and physical engagement. Hover to explore the defining sound of each decade.
+                    Every dot represents a decade of sound, starting with the 1970s as our happiest and most acoustic era. Use the toggles to see the paradox in action. You'll notice that as happiness (valence) declined, danceability and loudness surged. This suggests that while we lost acoustic warmth, we gained a more rhythmic, driving form of melancholy. Hover over any decade to hear its defining track.
         </p>
 
         <div style={styles.toggleRow}>
