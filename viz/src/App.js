@@ -65,8 +65,8 @@ export default function App() {
       <LoudnessEvolution />
       <SadnessParadox data={data} /> */}
       <ConsolidatedEvolution data={data} genreData={genreData} />
-      <GenreChordDiagram />
       <ParadoxScatter data={data} />
+      <GenreChordDiagram />
       {/* <GenreHeatmap data={data} genreData={genreData} /> */}
       <DecadeExplorer />
     </main>
