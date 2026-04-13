@@ -20,12 +20,12 @@ const color = d3.scaleOrdinal([
 const parseArrayString = (str) => {
   if (!str) return [];
   try { return JSON.parse(str.replace(/'/g, '"')); } 
-  catch (e) { return [str.replace(/[\[\]"']/g, '')]; }
+  catch (e) { return [str.replace(/[[\]"']/g, '')]; }
 };
 
 const normalizeName = (name) => {
   if (!name) return "";
-  return name.replace(/[\[\]"'`]/g, '').trim().toLowerCase();
+  return name.replace(/[[\]"'`]/g, '').trim().toLowerCase();
 };
 
 const getMacroGenres = (microGenres) => {
