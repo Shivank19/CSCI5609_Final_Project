@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Hero from "./components/Hero";
-  import RelationshipScatter from "./components/RelationshipScatter";
+// import SadnessParadox from "./components/SadnessParadox";
+// import ValenceBoxPlot from "./components/ValenceBoxPlot";
+// import LoudnessEvolution from "./components/LoudnessEvolution";
+import RelationshipScatter from "./components/RelationshipScatter";
+// import GenreHeatmap from "./components/GenreHeatmap";
 import { loadData, loadGenreData } from "./utils/dataUtils";
 import DecadeExplorer from "./components/DecadeExplorer";
 import ConsolidatedEvolution from "./components/ConsolidatedEvolution";
-import Popularitytierstrip from "./components/Popularitytierstrip"; // ← replaces GenreChordDiagram
+import GenreChordDiagram from "./components/GenreChordDiagram";
 
 export default function App() {
   const [data, setData] = useState([]);
@@ -29,7 +33,14 @@ export default function App() {
     return (
       <div style={loadingStyle}>
         <div style={spinnerStyle} />
-        <p style={{ color: "rgba(232,232,240,0.4)", marginTop: 24, letterSpacing: "0.1em", fontSize: 13 }}>
+        <p
+          style={{
+            color: "rgba(232,232,240,0.4)",
+            marginTop: 24,
+            letterSpacing: "0.1em",
+            fontSize: 13,
+          }}
+        >
           LOADING CENTURY OF SOUND
         </p>
       </div>
@@ -40,7 +51,8 @@ export default function App() {
       <div style={{ ...loadingStyle, flexDirection: "column", gap: 16 }}>
         <p style={{ color: "#e63946", fontSize: 18 }}>Could not load data</p>
         <p style={{ color: "rgba(232,232,240,0.4)", fontSize: 13 }}>
-          Make sure <code>spotify_clean.csv</code> is in the <code>public/</code> folder.
+          Make sure <code>spotify_clean.csv</code> is in the{" "}
+          <code>public/</code> folder.
         </p>
         <p style={{ color: "rgba(232,232,240,0.2)", fontSize: 12 }}>{error}</p>
       </div>
@@ -49,9 +61,13 @@ export default function App() {
   return (
     <main>
       <Hero />
+      {/* <ValenceBoxPlot data={data} />
+      <LoudnessEvolution />
+      <SadnessParadox data={data} /> */}
       <ConsolidatedEvolution data={data} genreData={genreData} />
       <RelationshipScatter data={data} />
-      <Popularitytierstrip data={data} />  {/* ← replaces GenreChordDiagram */}
+      <GenreChordDiagram />
+      {/* <GenreHeatmap data={data} genreData={genreData} /> */}
       <DecadeExplorer />
     </main>
   );
