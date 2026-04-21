@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Hero from "./components/Hero";
-// import SadnessParadox from "./components/SadnessParadox";
-// import ValenceBoxPlot from "./components/ValenceBoxPlot";
-// import LoudnessEvolution from "./components/LoudnessEvolution";
+import AttributeOnboarding from "./components/AttributeOnboarding";
+import TrifectaScrollytelling from "./components/TrifectaScrollytelling";
 import ParadoxScatter from "./components/ParadoxScatter";
-// import GenreHeatmap from "./components/GenreHeatmap";
-import { loadData, loadGenreData } from "./utils/dataUtils";
-import DecadeExplorer from "./components/DecadeExplorer";
-import ConsolidatedEvolution from "./components/ConsolidatedEvolution";
 import GenreChordDiagram from "./components/GenreChordDiagram";
+import DecadeExplorer from "./components/DecadeExplorer";
+import { loadData, loadGenreData } from "./utils/dataUtils";
 
 export default function App() {
   const [data, setData] = useState([]);
-  const [genreData, setGenreData] = useState([]);
+  // const [genreData, setGenreData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,7 +17,7 @@ export default function App() {
     Promise.all([loadData(), loadGenreData()])
       .then(([main, genre]) => {
         setData(main);
-        setGenreData(genre);
+        // setGenreData(genre);
         setLoading(false);
       })
       .catch((e) => {
@@ -60,14 +57,22 @@ export default function App() {
 
   return (
     <main>
+      {/* 1. Hook — vinyl player, click to play, rewind animation */}
       <Hero />
-      {/* <ValenceBoxPlot data={data} />
-      <LoudnessEvolution />
-      <SadnessParadox data={data} /> */}
-      <ConsolidatedEvolution data={data} genreData={genreData} />
+
+      {/* 2. Attribute onboarding — waveform + sliders */}
+      <AttributeOnboarding />
+
+      {/* 3. Trifecta scrollytelling — sticky chart + progressive reveals + 1990s callout + full reveal */}
+      <TrifectaScrollytelling data={data} />
+
+      {/* 4. Paradox scatter */}
       <ParadoxScatter data={data} />
+
+      {/* 5. Genre chord diagram */}
       <GenreChordDiagram />
-      {/* <GenreHeatmap data={data} genreData={genreData} /> */}
+
+      {/* 6. Decade explorer — vinyl disc + glyphs + song cards */}
       <DecadeExplorer />
     </main>
   );

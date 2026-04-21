@@ -10,9 +10,11 @@
 
 # production
 /build
+/build-check*
 
 # misc
 .DS_Store
+*_bkp.*
 .env.local
 .env.development.local
 .env.test.local
