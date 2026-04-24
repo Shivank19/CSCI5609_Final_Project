@@ -1,0 +1,87 @@
+{
+  "_instructions": {
+    "how_to_use": "For each attribute and side, set either videoId or embedUrl. embedUrl can be the full YouTube embed URL you get from the Share > Embed dialog. videoId can be just the 11-character YouTube ID.",
+    "example_embed_html": "<iframe src=\"https://www.youtube.com/embed/f7jkXqzsYzU?si=l1dQ2BcPtLGtsQ0E\"></iframe>",
+    "example_video_id": "f7jkXqzsYzU"
+  },
+  "valence": {
+    "high": {
+      "videoId": "f7jkXqzsYzU",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "n4RjJKxsamQ",
+      "embedUrl": ""
+    }
+  },
+  "loudness": {
+    "high": {
+      "videoId": "wXhTHyIgQ_U",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "4F_RCWVoL4s",
+      "embedUrl": ""
+    }
+  },
+  "acousticness": {
+    "high": {
+      "videoId": "rTVjnBo96Ug",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "PsO6ZnUZI0g",
+      "embedUrl": ""
+    }
+  },
+  "danceability": {
+    "high": {
+      "videoId": "0opZqh_TprM",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "yXQViqx6GMY",
+      "embedUrl": ""
+    }
+  },
+  "energy": {
+    "high": {
+      "videoId": "",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "",
+      "embedUrl": ""
+    }
+  },
+  "speechiness": {
+    "high": {
+      "videoId": "",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "",
+      "embedUrl": ""
+    }
+  },
+  "instrumentalness": {
+    "high": {
+      "videoId": "",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "",
+      "embedUrl": ""
+    }
+  },
+  "popularity": {
+    "high": {
+      "videoId": "",
+      "embedUrl": ""
+    },
+    "low": {
+      "videoId": "",
+      "embedUrl": ""
+    }
+  }
+}

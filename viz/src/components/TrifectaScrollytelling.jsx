@@ -140,8 +140,30 @@ function useElementSize(ref, fallbackHeight = 420) {
 }
 
 function buildVisibleSeries(yearData, progress) {
-  const maxIndex = Math.max(1, Math.round((yearData.length - 1) * progress));
-  return yearData.slice(0, maxIndex + 1);
+  if (!yearData.length) return [];
+  if (yearData.length === 1) return yearData;
+
+  const scaledIndex = clamp(progress, 0, 1) * (yearData.length - 1);
+  const lowerIndex = Math.floor(scaledIndex);
+  const upperIndex = Math.min(yearData.length - 1, Math.ceil(scaledIndex));
+  const t = scaledIndex - lowerIndex;
+
+  const visible = yearData.slice(0, lowerIndex + 1);
+
+  if (upperIndex > lowerIndex) {
+    const lower = yearData[lowerIndex];
+    const upper = yearData[upperIndex];
+    const interpolated = { year: lower.year + (upper.year - lower.year) * t };
+
+    FIELDS.forEach((field) => {
+      interpolated[field.key] =
+        lower[field.key] + (upper[field.key] - lower[field.key]) * t;
+    });
+
+    visible.push(interpolated);
+  }
+
+  return visible;
 }
 
 function formatValue(field, value) {
@@ -557,6 +579,9 @@ function InflectionCallout() {
 export default function TrifectaScrollytelling({ data }) {
   const [globalStep, setGlobalStep] = useState(0);
   const [finalPopularity, setFinalPopularity] = useState(70);
+  const [fieldScrollProgress, setFieldScrollProgress] = useState(
+    () => FIELDS.map((_, index) => (index === 0 ? 0 : 0)),
+  );
   const stepsRef = useRef([]);
 
   const yearData = useMemo(() => buildYearData(data, 70), [data]);
@@ -589,19 +614,63 @@ export default function TrifectaScrollytelling({ data }) {
     return () => observers.forEach((observer) => observer.disconnect());
   }, [yearData.length]);
 
+  useEffect(() => {
+    const updateProgress = () => {
+      const viewportAnchor = window.innerHeight * 0.42;
+
+      const nextProgress = FIELDS.map((field, fieldIndex) => {
+        const startIndex = FIELD_START[fieldIndex];
+        const endIndex = startIndex + field.steps.length - 1;
+        const startEl = stepsRef.current[startIndex];
+        const endEl = stepsRef.current[endIndex];
+
+        if (!startEl || !endEl) return 0;
+
+        const startRect = startEl.getBoundingClientRect();
+        const endRect = endEl.getBoundingClientRect();
+        const startPoint = startRect.top - viewportAnchor;
+        const endPoint = endRect.top + endRect.height * 0.72 - viewportAnchor;
+
+        if (startPoint >= 0) return 0;
+        if (endPoint <= 0) return 1;
+
+        return clamp(-startPoint / Math.max(1, endPoint - startPoint), 0, 1);
+      });
+
+      setFieldScrollProgress((prev) => {
+        const changed = nextProgress.some(
+          (value, index) => Math.abs(value - prev[index]) > 0.01,
+        );
+        return changed ? nextProgress : prev;
+      });
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    return () => {
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
+    };
+  }, []);
+
   const { fieldIdx, stepIdx } = globalToField(globalStep);
   const currentField = FIELDS[fieldIdx];
   const currentStep = currentField.steps[stepIdx];
 
   const progressByField = useMemo(() => {
-    const stepProgress = [0.36, 0.68, 1];
     return FIELDS.reduce((acc, field, index) => {
       if (index < fieldIdx) acc[field.key] = 1;
-      else if (index === fieldIdx) acc[field.key] = stepProgress[stepIdx] ?? 1;
+      else if (index === fieldIdx) {
+        acc[field.key] = Math.max(
+          fieldScrollProgress[index] ?? 0,
+          (stepIdx + 0.15) / field.steps.length,
+        );
+      }
       else acc[field.key] = 0;
       return acc;
     }, {});
-  }, [fieldIdx, stepIdx]);
+  }, [fieldIdx, fieldScrollProgress, stepIdx]);
 
   const finalProgress = useMemo(
     () =>

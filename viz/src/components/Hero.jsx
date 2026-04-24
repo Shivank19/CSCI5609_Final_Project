@@ -178,7 +178,10 @@ export default function Hero() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setDismissed(false);
+        if (entry.isIntersecting) {
+          setDismissed(false);
+          setPlaying(false);
+        }
       },
       { threshold: 0.2 },
     );

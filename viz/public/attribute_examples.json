@@ -1,0 +1,100 @@
+{
+  "_instructions": {
+    "how_to_use": "Set the visible high and low attribute card examples here. Matching is done by song name, with optional artistIncludes and year checks.",
+    "fields": ["name", "artistIncludes", "year"]
+  },
+  "valence": {
+    "high": {
+      "name": "Take It Easy - 2013 Remaster",
+      "artistIncludes": "Eagles",
+      "year": 1972
+    },
+    "low": {
+      "name": "Wind Of Change",
+      "artistIncludes": "Scorpions",
+      "year": 1990
+    }
+  },
+  "loudness": {
+    "high": {
+      "name": "Circles",
+      "artistIncludes": "Post Malone",
+      "year": 2019
+    },
+    "low": {
+      "name": "Sweet Caroline",
+      "artistIncludes": "Neil Diamond",
+      "year": 1969
+    }
+  },
+  "acousticness": {
+    "high": {
+      "name": "(Sittin' On) the Dock of the Bay",
+      "artistIncludes": "Otis Redding",
+      "year": 1968
+    },
+    "low": {
+      "name": "Stronger",
+      "artistIncludes": "Kanye West",
+      "year": 2007
+    }
+  },
+  "danceability": {
+    "high": {
+      "name": "Lemonade",
+      "artistIncludes": "Internet Money",
+      "year": 2020
+    },
+    "low": {
+      "name": "All I Want for Christmas Is You",
+      "artistIncludes": "Mariah Carey",
+      "year": 1994
+    }
+  },
+  "energy": {
+    "high": {
+      "name": "Don't Stop Believin'",
+      "artistIncludes": "Journey",
+      "year": 1981
+    },
+    "low": {
+      "name": "Sweet Caroline",
+      "artistIncludes": "Neil Diamond",
+      "year": 1969
+    }
+  },
+  "speechiness": {
+    "high": {
+      "name": "Hawái",
+      "artistIncludes": "Maluma",
+      "year": 2020
+    },
+    "low": {
+      "name": "Free Fallin'",
+      "artistIncludes": "Tom Petty",
+      "year": 1989
+    }
+  },
+  "instrumentalness": {
+    "high": {
+      "name": "Cabin Back Noise",
+      "year": 2018
+    },
+    "low": {
+      "name": "My Girl",
+      "artistIncludes": "The Temptations",
+      "year": 1965
+    }
+  },
+  "popularity": {
+    "high": {
+      "name": "Lemonade",
+      "artistIncludes": "Internet Money",
+      "year": 2020
+    },
+    "low": {
+      "name": "En Lo Oscuro",
+      "year": 2020
+    }
+  }
+}

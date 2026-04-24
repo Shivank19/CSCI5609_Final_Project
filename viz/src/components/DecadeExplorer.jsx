@@ -527,6 +527,34 @@ export default function DecadeExplorer() {
           </div>
         </div>
 
+        <div style={glyphLegendCard}>
+          <div style={glyphLegendVisual}>
+            <MusicGlyph
+              attributes={{
+                valence: 0.82,
+                loudness_norm: 0.62,
+                acousticness: 0.34,
+                danceability: 0.74,
+              }}
+              width={150}
+              height={110}
+              showLabels
+            />
+          </div>
+          <div style={glyphLegendText}>
+            <p style={glyphLegendTitle}>How to read each decade note</p>
+            <p style={glyphLegendBody}>
+              Each floating glyph is one decade. The four colored noteheads map to
+              valence, loudness, acousticness, and danceability.
+            </p>
+            <div style={glyphLegendList}>
+              <span style={glyphLegendItem}>Higher note position means a higher average value.</span>
+              <span style={glyphLegendItem}>Color tells you which attribute that notehead represents.</span>
+              <span style={glyphLegendItem}>Click a decade note to update the vinyl disc and open sample tracks.</span>
+            </div>
+          </div>
+        </div>
+
         {/* Attribute legend */}
         <div style={legendRow}>
           {[
@@ -670,11 +698,60 @@ const navBtn = (d) => ({
   padding: "6px 14px",
   transition: "all 0.15s ease",
 });
+const glyphLegendCard = {
+  display: "grid",
+  gridTemplateColumns: "160px 1fr",
+  gap: 22,
+  alignItems: "center",
+  marginTop: 44,
+  padding: "18px 20px",
+  borderRadius: 18,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.025)",
+};
+const glyphLegendVisual = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: 120,
+  borderRadius: 14,
+  background: "rgba(255,255,255,0.02)",
+  border: "1px solid rgba(255,255,255,0.05)",
+};
+const glyphLegendText = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+};
+const glyphLegendTitle = {
+  color: "#f4f4f8",
+  fontSize: "0.96rem",
+  fontWeight: 700,
+};
+const glyphLegendBody = {
+  color: "rgba(232,232,240,0.66)",
+  fontSize: "0.92rem",
+  lineHeight: 1.6,
+};
+const glyphLegendList = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 10,
+};
+const glyphLegendItem = {
+  color: "rgba(232,232,240,0.58)",
+  fontSize: "0.78rem",
+  lineHeight: 1.45,
+  padding: "8px 10px",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.06)",
+};
 const legendRow = {
   display: "flex",
   gap: 20,
   flexWrap: "wrap",
-  marginTop: 56,
+  marginTop: 24,
   paddingTop: 16,
   borderTop: "1px solid rgba(255,255,255,0.07)",
 };
