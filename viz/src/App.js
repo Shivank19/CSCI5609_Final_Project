@@ -5,6 +5,7 @@ import TrifectaScrollytelling from "./components/TrifectaScrollytelling";
 import ParadoxScatter from "./components/ParadoxScatter";
 import GenreChordDiagram from "./components/GenreChordDiagram";
 import DecadeExplorer from "./components/DecadeExplorer";
+import MusicTasteQuiz from "./components/MusicTasteQuiz";
 import { loadData, loadGenreData } from "./utils/dataUtils";
 
 export default function App() {
@@ -74,6 +75,9 @@ export default function App() {
 
       {/* 6. Decade explorer — vinyl disc + glyphs + song cards */}
       <DecadeExplorer />
+
+      {/* 7. Music taste quiz — find your decade */}
+      <MusicTasteQuiz data={data} />
     </main>
   );
 }

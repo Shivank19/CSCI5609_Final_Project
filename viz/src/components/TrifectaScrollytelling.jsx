@@ -198,6 +198,7 @@ function TrifectaChart({
   fullReveal,
   popularityThreshold,
   interactiveHover,
+  brushRange,
 }) {
   const wrapperRef = useRef(null);
   const { width, height } = useElementSize(
@@ -216,8 +217,14 @@ function TrifectaChart({
   const innerHeight = Math.max(220, height - margin.top - margin.bottom);
 
   const xScale = useMemo(
-    () => d3.scaleLinear().domain([1960, 2020]).range([0, innerWidth]),
-    [innerWidth],
+    () => {
+      const scale = d3.scaleLinear().domain([1960, 2020]).range([0, innerWidth]);
+      if (brushRange) {
+        scale.domain([brushRange[0], brushRange[1]]);
+      }
+      return scale;
+    },
+    [innerWidth, brushRange],
   );
   const yScale = useMemo(
     () => d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]),
@@ -525,6 +532,238 @@ function TrifectaChart({
   );
 }
 
+function RevealChart({ yearData, popularityThreshold, brushRange, setBrushRange }) {
+  const svgRef = useRef(null);
+  const brushRef = useRef(null);
+
+  useEffect(() => {
+    if (!svgRef.current || !yearData.length) return;
+
+    const svg = d3.select(svgRef.current);
+    svg.selectAll('*').remove();
+
+    const margin = { top: 28, right: 88, bottom: 40, left: 52 };
+    const width = svgRef.current.clientWidth - margin.left - margin.right;
+    const height = 370 - margin.top - margin.bottom;
+
+    const chart = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const xMain = d3.scaleLinear()
+      .domain(d3.extent(yearData, (d) => d.year))
+      .range([0, width]);
+
+    if (brushRange) {
+      xMain.domain(brushRange);
+    }
+
+    const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
+
+    const xAxis = d3.axisBottom(xMain).tickFormat(d3.format('d')).ticks(width / 80);
+    const yAxis = d3.axisLeft(y).ticks(5).tickFormat((d) => `${Math.round(d * 100)}%`);
+
+    chart.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(xAxis)
+      .call((g) => g.select('.domain').attr('stroke', 'rgba(255,255,255,0.12)'))
+      .call((g) => g.selectAll('line').attr('stroke', 'rgba(255,255,255,0.12)'))
+      .call((g) => g.selectAll('text').attr('fill', 'rgba(232,232,240,0.42)').attr('font-size', '10'));
+
+    chart.append('g')
+      .call(yAxis)
+      .call((g) => g.select('.domain').remove())
+      .call((g) => g.selectAll('line').attr('stroke', 'rgba(255,255,255,0.06)').attr('stroke-dasharray', '4,6'))
+      .call((g) => g.selectAll('text').attr('fill', 'rgba(232,232,240,0.42)').attr('font-size', '10'));
+
+    // 1990s inflection zone
+    const x1990 = xMain(1990);
+    const x2000 = xMain(2000);
+    if (x1990 < width && x2000 > 0) {
+      chart.append('rect')
+        .attr('x', Math.max(0, x1990))
+        .attr('y', 0)
+        .attr('width', Math.min(width, x2000) - Math.max(0, x1990))
+        .attr('height', height)
+        .attr('fill', 'rgba(255,90,60,0.07)')
+        .attr('stroke', 'rgba(255,110,70,0.3)')
+        .attr('stroke-width', 1)
+        .attr('rx', 6);
+    }
+
+    // Clip path
+    chart.append('defs').append('clipPath')
+      .attr('id', 'trifecta-clip')
+      .append('rect')
+      .attr('width', width)
+      .attr('height', height);
+
+    const lineGroup = chart.append('g').attr('clip-path', 'url(#trifecta-clip)');
+
+    FIELDS.forEach((field) => {
+      const line = d3.line()
+        .x((d) => xMain(d.year))
+        .y((d) => y(d[field.key]))
+        .curve(d3.curveMonotoneX)
+        .defined((d) => Number.isFinite(d[field.key]));
+
+      lineGroup.append('path')
+        .datum(yearData)
+        .attr('class', `trifecta-line-${field.key}`)
+        .attr('fill', 'none')
+        .attr('stroke', field.color)
+        .attr('stroke-width', 2.5)
+        .attr('d', line);
+
+      // End label
+      const lastVisible = yearData.filter((d) => xMain(d.year) <= width && xMain(d.year) >= 0).pop();
+      if (lastVisible) {
+        lineGroup.append('text')
+          .attr('x', xMain(lastVisible.year) + 8)
+          .attr('y', y(lastVisible[field.key]))
+          .attr('fill', field.color)
+          .attr('font-size', '11')
+          .attr('font-weight', '600')
+          .attr('dominant-baseline', 'middle')
+          .text(field.label);
+      }
+    });
+
+    // Tooltip crosshair
+    const bisect = d3.bisector((d) => d.year).left;
+    const focus = chart.append('g').style('display', 'none');
+    focus.append('line')
+      .attr('y1', 0).attr('y2', height)
+      .attr('stroke', 'rgba(255,255,255,0.2)')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '4,4');
+    FIELDS.forEach((field) => {
+      focus.append('circle')
+        .attr('class', `dot-${field.key}`)
+        .attr('r', 5)
+        .attr('fill', field.color)
+        .attr('stroke', 'rgba(10,10,16,0.8)')
+        .attr('stroke-width', 2);
+    });
+
+    const tooltip = d3.select('body').selectAll('.trifecta-reveal-tip')
+      .data([null]).join('div')
+      .attr('class', 'trifecta-reveal-tip')
+      .style('position', 'fixed')
+      .style('pointer-events', 'none')
+      .style('opacity', 0)
+      .style('min-width', '160px')
+      .style('padding', '10px 12px')
+      .style('border-radius', '10px')
+      .style('border', '1px solid rgba(255,255,255,0.08)')
+      .style('background', 'rgba(12,12,18,0.92)')
+      .style('backdrop-filter', 'blur(12px)')
+      .style('font-size', '12px')
+      .style('color', '#e8e8f0')
+      .style('z-index', 9999);
+
+    svg.on('mousemove', (event) => {
+      const [mx] = d3.pointer(event);
+      const mouseX = mx - margin.left;
+      if (mouseX < 0 || mouseX > width) {
+        focus.style('display', 'none');
+        tooltip.style('opacity', 0);
+        return;
+      }
+      const x0 = xMain.invert(mouseX);
+      const i = bisect(yearData, x0, 1);
+      const d0 = yearData[i - 1];
+      const d1 = yearData[i];
+      if (!d0) return;
+      const d = d1 && (x0 - d0.year > d1.year - x0) ? d1 : d0;
+
+      focus.style('display', null).attr('transform', `translate(${xMain(d.year)},0)`);
+      FIELDS.forEach((field) => {
+        focus.select(`.dot-${field.key}`).attr('cy', y(d[field.key]));
+      });
+
+      const ttLeft = event.clientX + 16;
+      const ttTop = event.clientY - 60;
+      tooltip.style('opacity', 1)
+        .style('left', `${ttLeft}px`)
+        .style('top', `${ttTop}px`)
+        .html(`<div style="font-weight:700;margin-bottom:6px;color:rgba(232,232,240,0.5);font-size:10px;letter-spacing:0.1em">${d.year}</div>` +
+          FIELDS.map((f) => {
+            const val = d[f.key];
+            const display = f.key === 'loudness_norm'
+              ? `${(val * 20 - 20).toFixed(1)} dB`
+              : `${Math.round(val * 100)}%`;
+            return `<div style="display:flex;justify-content:space-between;gap:24px;margin-bottom:3px">
+              <span style="color:rgba(232,232,240,0.6)">${f.label}</span>
+              <span style="color:${f.color};font-weight:600">${display}</span>
+            </div>`;
+          }).join(''));
+    });
+
+    svg.on('mouseleave', () => {
+      focus.style('display', 'none');
+      tooltip.style('opacity', 0);
+    });
+
+    // Brush mini-chart
+    if (brushRef.current) {
+      const bMargin = { top: 10, right: 88, bottom: 20, left: 52 };
+      const bWidth = brushRef.current.clientWidth - bMargin.left - bMargin.right;
+      const bHeight = 60 - bMargin.top - bMargin.bottom;
+
+      const bSvg = d3.select(brushRef.current);
+      bSvg.selectAll('*').remove();
+
+      const bChart = bSvg.append('g').attr('transform', `translate(${bMargin.left},${bMargin.top})`);
+
+      const xBrush = d3.scaleLinear()
+        .domain(d3.extent(yearData, (d) => d.year))
+        .range([0, bWidth]);
+
+      const yBrush = d3.scaleLinear().domain([0, 1]).range([bHeight, 0]);
+
+      FIELDS.forEach((field) => {
+        const bLine = d3.line()
+          .x((d) => xBrush(d.year))
+          .y((d) => yBrush(d[field.key]))
+          .curve(d3.curveMonotoneX);
+        bChart.append('path')
+          .datum(yearData)
+          .attr('fill', 'none')
+          .attr('stroke', field.color)
+          .attr('stroke-width', 1)
+          .attr('opacity', 0.4)
+          .attr('d', bLine);
+      });
+
+      const brush = d3.brushX()
+        .extent([[0, 0], [bWidth, bHeight]])
+        .on('brush end', (event) => {
+          if (event.selection) {
+            setBrushRange(event.selection.map(xBrush.invert));
+          } else {
+            setBrushRange(null);
+          }
+        });
+
+      bChart.append('g').attr('class', 'brush').call(brush);
+
+      if (brushRange) {
+        bChart.select('.brush').call(brush.move, brushRange.map(xBrush));
+      }
+    }
+  }, [yearData, brushRange, setBrushRange]);
+
+  return (
+    <div style={revealChartCard}>
+      <svg ref={svgRef} width="100%" height={370} style={{ display: 'block' }} />
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+        <p style={brushLabelStyle}>Drag to zoom into a time period</p>
+        <svg ref={brushRef} width="100%" height={60} style={{ display: 'block' }} />
+      </div>
+    </div>
+  );
+}
+
+
 function InflectionCallout() {
   return (
     <div style={inflectionWrap}>
@@ -579,6 +818,7 @@ function InflectionCallout() {
 export default function TrifectaScrollytelling({ data }) {
   const [globalStep, setGlobalStep] = useState(0);
   const [finalPopularity, setFinalPopularity] = useState(70);
+  const [brushRange, setBrushRange] = useState(null);
   const [fieldScrollProgress, setFieldScrollProgress] = useState(
     () => FIELDS.map((_, index) => (index === 0 ? 0 : 0)),
   );
@@ -671,15 +911,6 @@ export default function TrifectaScrollytelling({ data }) {
       return acc;
     }, {});
   }, [fieldIdx, fieldScrollProgress, stepIdx]);
-
-  const finalProgress = useMemo(
-    () =>
-      FIELDS.reduce((acc, field) => {
-        acc[field.key] = 1;
-        return acc;
-      }, {}),
-    [],
-  );
 
   if (!yearData.length) return null;
 
@@ -845,16 +1076,12 @@ export default function TrifectaScrollytelling({ data }) {
             </div>
           </div>
 
-          <div style={revealChartWrap}>
-            <TrifectaChart
-              yearData={finalYearData}
-              progressByField={finalProgress}
-              activeField={null}
-              fullReveal
-              popularityThreshold={finalPopularity}
-              interactiveHover
-            />
-          </div>
+          <RevealChart
+            yearData={finalYearData}
+            popularityThreshold={finalPopularity}
+            brushRange={brushRange}
+            setBrushRange={setBrushRange}
+          />
           <div style={legendRow}>
             {FIELDS.map(({ key, label, color }) => (
               <span key={key} style={legendItem}>
@@ -1150,13 +1377,22 @@ const finalSliderValue = {
   color: "rgba(232,232,240,0.68)",
 };
 
-const revealChartWrap = {
+const revealChartCard = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.07)",
   borderRadius: "18px",
-  padding: "24px",
-  height: "420px",
+  padding: "20px",
   marginBottom: "24px",
+};
+
+const brushLabelStyle = {
+  fontSize: "10px",
+  fontWeight: 600,
+  letterSpacing: "0.12em",
+  textTransform: "uppercase",
+  color: "rgba(232,232,240,0.35)",
+  marginBottom: "4px",
+  textAlign: "center",
 };
 
 const legendRow = {
