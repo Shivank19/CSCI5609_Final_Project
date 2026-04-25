@@ -89,6 +89,93 @@ const GENRE_STORY_PROFILES = {
   },
 };
 
+const CURATED_GENRE_PAIRS = [
+  {
+    id: "pop-rap",
+    genreA: "Pop",
+    genreB: "Hip Hop / Rap",
+    label: "Pop × Hip Hop / Rap",
+    insight:
+      "A mainstream merger where emotional brightness softens while loudness and rhythmic pressure keep climbing.",
+  },
+  {
+    id: "indie-classical",
+    genreA: "Indie",
+    genreB: "Classical",
+    label: "Indie × Classical",
+    insight:
+      "A quieter bridge that tests how melancholy can deepen without giving up texture and space.",
+  },
+  {
+    id: "rb-jazz",
+    genreA: "R&B / Soul",
+    genreB: "Jazz",
+    label: "R&B / Soul × Jazz",
+    insight:
+      "An emotionally rich pairing where softness, groove, and expressive phrasing meet the paradox in a subtler way.",
+  },
+  {
+    id: "electronic-pop",
+    genreA: "Electronic",
+    genreB: "Pop",
+    label: "Electronic × Pop",
+    insight:
+      "One of the clearest stories of acoustic drop-off as polished synthetic production moves into the center of pop.",
+  },
+  {
+    id: "country-rock",
+    genreA: "Country",
+    genreB: "Rock",
+    label: "Country × Rock",
+    insight:
+      "A crossover built on storytelling and drive, useful for seeing when energy rises without fully abandoning organic texture.",
+  },
+];
+
+const CURATED_PAIR_STORY_FRAMES = {
+  "pop-rap": {
+    earlyFrame: "mainstream polish and rhythmic grit still live in different rooms",
+    breakthroughFrame: "the radio center starts absorbing rap's cadence and pressure",
+    matureFrame:
+      "the crossover starts sounding less like borrowing and more like the default mainstream language",
+    paradoxFrame:
+      "the paradox lands here as darker feelings wrapped in highly replayable production",
+  },
+  "indie-classical": {
+    earlyFrame: "the pairing feels more adjacent in sensibility than truly fused",
+    breakthroughFrame:
+      "arrangement, restraint, and melancholy begin to meet in the same tracks",
+    matureFrame:
+      "the blend turns into a chamber-like sadness rather than a loud crossover event",
+    paradoxFrame: "the paradox shows up here with less bombast and more emotional depth",
+  },
+  "rb-jazz": {
+    earlyFrame:
+      "shared phrasing is there early, but the overlap still behaves like influence more than fusion",
+    breakthroughFrame:
+      "groove and improvisational color begin occupying the same emotional space",
+    matureFrame: "the crossover settles into a silky, low-friction emotional lane",
+    paradoxFrame:
+      "the paradox becomes more intimate here, less about brute force and more about mood saturation",
+  },
+  "electronic-pop": {
+    earlyFrame: "synthetic polish still sits at the edge of the pop mainstream",
+    breakthroughFrame:
+      "electronic texture stops feeling like an accent and starts steering the whole record",
+    matureFrame: "the hybrid hardens into a clean, fully engineered pop surface",
+    paradoxFrame:
+      "the paradox is strongest here when emotional brightness drops but the production gets even more addictive",
+  },
+  "country-rock": {
+    earlyFrame:
+      "the relationship begins in shared instruments and attitude more than explicit co-tagging",
+    breakthroughFrame: "storytelling and arena-scale momentum begin to travel together",
+    matureFrame: "the blend becomes a durable middle ground between drive and rootsiness",
+    paradoxFrame:
+      "the paradox stays partial here because force rises faster than acoustic texture disappears",
+  },
+};
+
 const parseArrayString = (str) => {
   if (!str) return [];
   try {
@@ -262,15 +349,36 @@ function describeParadox(shared) {
   return "the sadness paradox is still faint here";
 }
 
-function makeStoryCopy(stat, previous, genreA, genreB, baseline) {
+function describeStoryPhase(stat, previous, baseline, peakOverlap) {
+  if (!stat.overlapCount) return "distant";
+  if (previous && stat.overlapCount - previous.overlapCount > 18) return "breakthrough";
+  if (peakOverlap > 0 && stat.overlapCount >= peakOverlap * 0.72) return "mature";
+  if (baseline?.overlapCount && stat.overlapCount <= baseline.overlapCount * 1.15) {
+    return "tentative";
+  }
+  return "developing";
+}
+
+function pairNarrativeFrame(pairConfig, phase) {
+  if (!pairConfig) return "";
+  if (phase === "distant" || phase === "tentative") return pairConfig.earlyFrame;
+  if (phase === "breakthrough" || phase === "developing") {
+    return pairConfig.breakthroughFrame;
+  }
+  return pairConfig.matureFrame;
+}
+
+function makeStoryCopy(stat, previous, genreA, genreB, baseline, pairConfig, peakOverlap) {
   const overlapDelta = previous ? stat.overlapCount - previous.overlapCount : 0;
   const sharedValence = stat.shared.valence;
   const sharedLoudness = stat.shared.loudness;
   const sharedAcousticness = stat.shared.acousticness;
+  const phase = describeStoryPhase(stat, previous, baseline, peakOverlap);
 
   const profileA = profileForGenre(genreA);
   const profileB = profileForGenre(genreB);
   const bridgeStrength = describeBridgeStrength(stat.overlapRate);
+  const frame = pairNarrativeFrame(pairConfig, phase);
   const moodPull = compareMetric(
     sharedValence,
     stat.genreAStats.valence,
@@ -306,12 +414,14 @@ function makeStoryCopy(stat, previous, genreA, genreB, baseline) {
   );
 
   let title = `${genreA} and ${genreB} are still circling each other.`;
-  if (stat.overlapCount > 0 && overlapDelta > 20) {
+  if (phase === "breakthrough") {
     title = `${genreA} and ${genreB} suddenly start sharing real musical ground.`;
-  } else if (stat.overlapCount > 0 && overlapDelta > 6) {
+  } else if (phase === "developing" && stat.overlapCount > 0 && overlapDelta > 6) {
     title = `${genreA} starts borrowing more openly from ${genreB}, and vice versa.`;
   } else if (stat.overlapCount > 0 && overlapDelta < -12) {
     title = `${genreA} and ${genreB} stay linked, but the crossover cools for a decade.`;
+  } else if (phase === "mature") {
+    title = `${genreA} and ${genreB} settle into a durable shared sound.`;
   } else if (stat.overlapCount > 0 && stat.overlapRate >= 0.14) {
     title = `${genreA} and ${genreB} now share a recognizable crossover lane.`;
   } else if (stat.overlapCount > 0) {
@@ -319,17 +429,17 @@ function makeStoryCopy(stat, previous, genreA, genreB, baseline) {
   }
 
   const body = stat.overlapCount
-    ? `In the ${stat.decade}s, ${genreA}'s ${profileA.identity} meets ${genreB}'s ${profileB.identity}. We found ${stat.overlapCount.toLocaleString()} shared tracks, which makes this connection feel like ${bridgeStrength} rather than a coincidence. The overlap sounds ${describeValence(sharedValence)}, ${describeLoudness(sharedLoudness)}, and ${describeAcousticness(sharedAcousticness)}. Emotionally it leans toward ${moodPull}, dynamically it lands closer to ${loudnessPull}, and texturally it feels nearest to ${texturePull}.`
-    : `In the ${stat.decade}s, ${genreA} and ${genreB} are more adjacent than fused. ${genreA} reads as ${profileA.energy} while ${genreB} feels ${profileB.energy}, but the shared catalog is still too thin to form a stable hybrid. That distance matters because it makes any later convergence feel earned instead of automatic.`;
+    ? `In the ${stat.decade}s, ${genreA}'s ${profileA.identity} meets ${genreB}'s ${profileB.identity}, and ${frame}. We found ${stat.overlapCount.toLocaleString()} shared tracks, which makes this connection feel like ${bridgeStrength} rather than a coincidence. The overlap sounds ${describeValence(sharedValence)}, ${describeLoudness(sharedLoudness)}, and ${describeAcousticness(sharedAcousticness)}. Emotionally it leans toward ${moodPull}, dynamically it lands closer to ${loudnessPull}, and texturally it feels nearest to ${texturePull}.`
+    : `In the ${stat.decade}s, ${genreA} and ${genreB} are more adjacent than fused. ${genreA} reads as ${profileA.energy} while ${genreB} feels ${profileB.energy}, and ${frame}. The shared catalog is still too thin to form a stable hybrid, which makes any later convergence feel earned instead of automatic.`;
 
   const paradox = stat.overlapCount
-    ? `This is the point where ${describeParadox(stat.shared)}. Compared with the first decade that produced real overlap, the shared tracks are ${formatDelta(sharedValence, baseline.shared.valence)} in valence, ${formatDelta(sharedLoudness, baseline.shared.loudness)} in loudness, and ${formatDelta(sharedAcousticness, baseline.shared.acousticness, true)} in acousticness. In plain terms, the blend is moving ${sharedValence != null && baseline.shared.valence != null && sharedValence < baseline.shared.valence ? "darker" : "lighter"}, ${sharedLoudness != null && baseline.shared.loudness != null && sharedLoudness > baseline.shared.loudness ? "louder" : "softer"}, and ${sharedAcousticness != null && baseline.shared.acousticness != null && sharedAcousticness < baseline.shared.acousticness ? "less acoustic" : "more acoustic"} than its own starting point.`
+    ? `This is the point where ${describeParadox(stat.shared)}. For this pairing, that means ${pairConfig?.paradoxFrame || "the emotional drop, loudness rise, and acoustic thinning are beginning to align"}. Compared with the first decade that produced real overlap, the shared tracks are ${formatDelta(sharedValence, baseline.shared.valence)} in valence, ${formatDelta(sharedLoudness, baseline.shared.loudness)} in loudness, and ${formatDelta(sharedAcousticness, baseline.shared.acousticness, true)} in acousticness. In plain terms, the blend is moving ${sharedValence != null && baseline.shared.valence != null && sharedValence < baseline.shared.valence ? "darker" : "lighter"}, ${sharedLoudness != null && baseline.shared.loudness != null && sharedLoudness > baseline.shared.loudness ? "louder" : "softer"}, and ${sharedAcousticness != null && baseline.shared.acousticness != null && sharedAcousticness < baseline.shared.acousticness ? "less acoustic" : "more acoustic"} than its own starting point.`
     : `The sadness paradox is still mostly outside the shared space here. You can already see the ingredients sitting in the separate scenes, but the overlap is too thin for the emotional drop, volume lift, and acoustic fade to register as one combined story yet.`;
 
   return { title, body, paradox };
 }
 
-function buildPairStory(decadeData, genreA, genreB) {
+function buildPairStory(decadeData, genreA, genreB, pairConfig) {
   const key = pairKey(genreA, genreB);
   const decades = Object.keys(decadeData)
     .map(Number)
@@ -365,9 +475,18 @@ function buildPairStory(decadeData, genreA, genreB) {
   });
 
   const baseline = story.find((entry) => entry.shared.count > 0) || story[0];
+  const peakOverlap = d3.max(story, (entry) => entry.overlapCount) || 0;
 
   return story.map((entry, index) => {
-    const copy = makeStoryCopy(entry, story[index - 1], genreA, genreB, baseline);
+    const copy = makeStoryCopy(
+      entry,
+      story[index - 1],
+      genreA,
+      genreB,
+      baseline,
+      pairConfig,
+      peakOverlap,
+    );
     return {
       ...entry,
       ...copy,
@@ -757,10 +876,15 @@ export default function GenreChordDiagram() {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const [selectedGenreA, setSelectedGenreA] = useState("Pop");
-  const [selectedGenreB, setSelectedGenreB] = useState("Hip Hop / Rap");
+  const [selectedPairId, setSelectedPairId] = useState(CURATED_GENRE_PAIRS[0].id);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
   const stepRefs = useRef([]);
+
+  const selectedPair =
+    CURATED_GENRE_PAIRS.find((pair) => pair.id === selectedPairId) || CURATED_GENRE_PAIRS[0];
+  const selectedPairStoryFrame = CURATED_PAIR_STORY_FRAMES[selectedPair.id] || null;
+  const selectedGenreA = selectedPair.genreA;
+  const selectedGenreB = selectedPair.genreB;
 
   useEffect(() => {
     Promise.all([
@@ -917,13 +1041,21 @@ export default function GenreChordDiagram() {
   }, [dataByYear, currentYear]);
 
   const pairStory = useMemo(
-    () => (decadeData ? buildPairStory(decadeData, selectedGenreA, selectedGenreB) : []),
-    [decadeData, selectedGenreA, selectedGenreB],
+    () =>
+      decadeData
+        ? buildPairStory(
+            decadeData,
+            selectedGenreA,
+            selectedGenreB,
+            selectedPairStoryFrame,
+          )
+        : [],
+    [decadeData, selectedGenreA, selectedGenreB, selectedPairStoryFrame],
   );
 
   useEffect(() => {
     setActiveStoryIndex(0);
-  }, [selectedGenreA, selectedGenreB]);
+  }, [selectedPairId]);
 
   useEffect(() => {
     if (!pairStory.length) return undefined;
@@ -958,22 +1090,6 @@ export default function GenreChordDiagram() {
     );
   }
 
-  const handleGenreAChange = (value) => {
-    if (value === selectedGenreB) {
-      const fallback = GENRE_NAMES.find((name) => name !== value) || selectedGenreB;
-      setSelectedGenreB(fallback);
-    }
-    setSelectedGenreA(value);
-  };
-
-  const handleGenreBChange = (value) => {
-    if (value === selectedGenreA) {
-      const fallback = GENRE_NAMES.find((name) => name !== value) || selectedGenreA;
-      setSelectedGenreA(fallback);
-    }
-    setSelectedGenreB(value);
-  };
-
   return (
     <section style={styles.section}>
       <div className="container">
@@ -984,40 +1100,32 @@ export default function GenreChordDiagram() {
           <em>follow one genre relationship through time.</em>
         </h2>
         <p className="section-body" style={{ marginBottom: "28px" }}>
-          Pick two genres and scroll decade by decade. This first view zooms in on
-          how one relationship evolves, when the two scenes actually start sharing
-          tracks, and how that shared space moves toward the sadness paradox of lower
-          valence, higher loudness, and lower acousticness.
+          Instead of browsing every possible combination, this section focuses on a
+          handful of pairings where the crossover tells a sharper story. Pick one
+          of the featured relationships and scroll decade by decade to see how that
+          shared space moves toward the sadness paradox of lower valence, higher
+          loudness, and lower acousticness.
         </p>
 
         <div style={storyControlBar}>
           <div style={storyFilterGroup}>
-            <label style={styles.label}>Genre one</label>
+            <label style={styles.label}>Featured pair</label>
             <select
-              value={selectedGenreA}
-              onChange={(event) => handleGenreAChange(event.target.value)}
+              value={selectedPairId}
+              onChange={(event) => setSelectedPairId(event.target.value)}
               style={storySelect}
             >
-              {GENRE_NAMES.map((name) => (
-                <option key={`a-${name}`} value={name}>
-                  {name}
+              {CURATED_GENRE_PAIRS.map((pair) => (
+                <option
+                  key={pair.id}
+                  value={pair.id}
+                  style={{ background: "#171722", color: "#f4f4f8" }}
+                >
+                  {pair.label}
                 </option>
               ))}
             </select>
-          </div>
-          <div style={storyFilterGroup}>
-            <label style={styles.label}>Genre two</label>
-            <select
-              value={selectedGenreB}
-              onChange={(event) => handleGenreBChange(event.target.value)}
-              style={storySelect}
-            >
-              {GENRE_NAMES.map((name) => (
-                <option key={`b-${name}`} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+            <p style={storySelectNote}>{selectedPair.insight}</p>
           </div>
         </div>
 
@@ -1100,19 +1208,29 @@ const storyControlBar = {
 };
 
 const storyFilterGroup = {
-  minWidth: "220px",
+  minWidth: "320px",
+  maxWidth: "560px",
   display: "flex",
   flexDirection: "column",
   gap: "8px",
 };
 
 const storySelect = {
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.1)",
+  background: "#171722",
+  border: "1px solid rgba(255,255,255,0.14)",
   borderRadius: "12px",
-  color: "var(--text)",
+  color: "#f4f4f8",
   padding: "12px 14px",
   fontSize: "14px",
+  lineHeight: 1.4,
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+};
+
+const storySelectNote = {
+  color: "rgba(232,232,240,0.64)",
+  fontSize: "0.88rem",
+  lineHeight: 1.6,
+  maxWidth: "56ch",
 };
 
 const storyScrollWrap = {
