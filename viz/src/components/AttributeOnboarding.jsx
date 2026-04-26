@@ -356,10 +356,11 @@ function ExampleCard({ attr, variant, track, audioConfig, onOpenAudio }) {
 }
 
 export default function AttributeOnboarding() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(null);
   const [examples, setExamples] = useState({});
   const [audioConfig, setAudioConfig] = useState({});
   const [openAudio, setOpenAudio] = useState(null);
+  const introRef = useRef(null);
   const stepRefs = useRef([]);
 
   useEffect(() => {
@@ -442,6 +443,21 @@ export default function AttributeOnboarding() {
 
   useEffect(() => {
     const observers = [];
+
+    if (introRef.current) {
+      const introObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveIndex(null);
+        },
+        {
+          rootMargin: "-18% 0px -42% 0px",
+          threshold: 0.18,
+        },
+      );
+      introObserver.observe(introRef.current);
+      observers.push(introObserver);
+    }
+
     stepRefs.current.forEach((element, index) => {
       if (!element) return;
       const observer = new IntersectionObserver(
@@ -469,15 +485,15 @@ export default function AttributeOnboarding() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, []);
 
-  const activeAttr = ATTRS[activeIndex];
-  const activeExamples = examples[activeAttr.key] || {};
+  const activeAttr = activeIndex == null ? null : ATTRS[activeIndex];
+  const activeExamples = activeAttr ? examples[activeAttr.key] || {} : {};
 
   return (
     <>
       <section style={sectionStyle}>
         <div style={scrollInner}>
           <div style={textRail}>
-            <div style={introBlock}>
+            <div ref={introRef} style={introBlock}>
               <p className="section-label" style={{ color: "var(--accent)" }}>
                 Before the Story Starts
               </p>
@@ -547,33 +563,35 @@ export default function AttributeOnboarding() {
             ))}
           </div>
 
-        <div style={visualRail}>
-          <div style={stickyPanel}>
-            <div style={stickyHeader}>
-              <p style={stickyLabel}>Now viewing</p>
-              <h3 style={{ ...stickyTitle, color: activeAttr.color }}>{activeAttr.label}</h3>
-              <p style={stickyBody}>{activeAttr.title}</p>
-            </div>
+          <div style={visualRail}>
+            {activeAttr && (
+              <div style={stickyPanel}>
+                <div style={stickyHeader}>
+                  <p style={stickyLabel}>Now viewing</p>
+                  <h3 style={{ ...stickyTitle, color: activeAttr.color }}>{activeAttr.label}</h3>
+                  <p style={stickyBody}>{activeAttr.title}</p>
+                </div>
 
-            <div style={coversStack}>
-              <ExampleCard
-                attr={activeAttr}
-                variant="high"
-                track={activeExamples.high}
-                audioConfig={audioConfig?.[activeAttr.key]?.high}
-                onOpenAudio={setOpenAudio}
-              />
-              <ExampleCard
-                attr={activeAttr}
-                variant="low"
-                track={activeExamples.low}
-                audioConfig={audioConfig?.[activeAttr.key]?.low}
-                onOpenAudio={setOpenAudio}
-              />
-            </div>
+                <div style={coversStack}>
+                  <ExampleCard
+                    attr={activeAttr}
+                    variant="high"
+                    track={activeExamples.high}
+                    audioConfig={audioConfig?.[activeAttr.key]?.high}
+                    onOpenAudio={setOpenAudio}
+                  />
+                  <ExampleCard
+                    attr={activeAttr}
+                    variant="low"
+                    track={activeExamples.low}
+                    audioConfig={audioConfig?.[activeAttr.key]?.low}
+                    onOpenAudio={setOpenAudio}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
       </section>
 
       <AudioModal openItem={openAudio} onClose={() => setOpenAudio(null)} />
@@ -694,18 +712,18 @@ const whyText = {
 const visualRail = {
   position: "sticky",
   top: "10vh",
-  height: "80vh",
+  height: "auto",
 };
 
 const stickyPanel = {
-  height: "100%",
+  minHeight: "auto",
   borderRadius: "24px",
   border: "1px solid rgba(255,255,255,0.08)",
   background: "rgba(255,255,255,0.03)",
-  padding: "20px",
+  padding: "18px",
   display: "flex",
   flexDirection: "column",
-  gap: "18px",
+  gap: "14px",
 };
 
 const stickyHeader = {
@@ -736,24 +754,30 @@ const stickyBody = {
 
 const coversStack = {
   display: "grid",
-  gridTemplateRows: "1fr 1fr",
-  gap: "14px",
+  gridTemplateRows: "repeat(2, auto)",
+  gap: "12px",
   minHeight: 0,
-  flex: 1,
+  flex: "0 0 auto",
 };
 
 const exampleCard = {
   display: "grid",
-  gridTemplateColumns: "112px 1fr",
-  gap: "14px",
-  borderRadius: "16px",
+  gridTemplateColumns: "92px 1fr",
+  gap: "12px",
+  alignItems: "start",
+  borderRadius: "14px",
   border: "1px solid rgba(255,255,255,0.08)",
-  overflow: "hidden",
+  padding: "10px",
   minHeight: 0,
 };
 
 const coverWrap = {
-  minHeight: 0,
+  width: 92,
+  height: 92,
+  overflow: "hidden",
+  borderRadius: "10px",
+  border: "1px solid rgba(255,255,255,0.07)",
+  background: "rgba(255,255,255,0.04)",
 };
 
 const coverImage = {
@@ -766,13 +790,12 @@ const coverImage = {
 const coverFallback = {
   width: "100%",
   height: "100%",
-  minHeight: "190px",
+  minHeight: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   background:
     "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
-  borderRight: "1px solid rgba(255,255,255,0.06)",
 };
 
 const coverFallbackText = {
@@ -782,10 +805,11 @@ const coverFallbackText = {
 };
 
 const exampleMeta = {
-  padding: "14px 14px 14px 0",
+  padding: "4px 4px 4px 0",
   display: "flex",
   flexDirection: "column",
   justifyContent: "flex-start",
+  minWidth: 0,
 };
 
 const examplePill = {
@@ -793,52 +817,52 @@ const examplePill = {
   fontWeight: 700,
   letterSpacing: "0.12em",
   textTransform: "uppercase",
-  marginBottom: "8px",
+  marginBottom: "6px",
 };
 
 const exampleSong = {
   color: "#f4f4f8",
-  fontSize: "0.96rem",
+  fontSize: "0.9rem",
   lineHeight: 1.36,
-  marginBottom: "4px",
+  marginBottom: "3px",
 };
 
 const exampleArtist = {
   color: "rgba(232,232,240,0.56)",
-  fontSize: "0.84rem",
+  fontSize: "0.78rem",
   lineHeight: 1.45,
-  marginBottom: "8px",
+  marginBottom: "6px",
 };
 
 const exampleValue = {
   color: "rgba(255,255,255,0.86)",
-  fontSize: "0.86rem",
-  marginBottom: "10px",
+  fontSize: "0.8rem",
+  marginBottom: "6px",
 };
 
 const audioBox = {
-  marginTop: "auto",
-  paddingTop: "10px",
+  marginTop: "4px",
+  paddingTop: "4px",
 };
 
 const audioLabel = {
-  fontSize: "10px",
+  fontSize: "9px",
   fontWeight: 700,
   letterSpacing: "0.12em",
   textTransform: "uppercase",
   color: "rgba(232,232,240,0.42)",
-  marginBottom: "6px",
+  marginBottom: "5px",
 };
 
 const audioButton = {
   width: "fit-content",
-  padding: "8px 12px",
+  padding: "6px 10px",
   borderRadius: "999px",
   border: "1px solid rgba(255,255,255,0.1)",
   background: "rgba(255,255,255,0.05)",
   color: "#f4f4f8",
   cursor: "pointer",
-  fontSize: "12px",
+  fontSize: "11px",
 };
 
 const modalOverlay = {

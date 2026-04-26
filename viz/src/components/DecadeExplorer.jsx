@@ -63,6 +63,7 @@ function formatDuration(ms) {
 }
 
 function withNormalizedLoudness(item = {}) {
+  if (item.loudness_norm != null) return item;
   if (item.loudness == null) return item;
   return {
     ...item,
@@ -103,7 +104,7 @@ function CompactAttributeLegend() {
   return (
     <div style={compactLegend}>
       <div style={compactLegendRow}>
-        <span style={compactLegendHint}>Note height = value</span>
+        <span style={compactLegendHint}>Stem length = value</span>
         {noteItems.map((item) => (
           <span key={item.label} style={compactLegendItem}>
             <span style={{ ...compactLegendDot, background: item.color }} />
@@ -382,9 +383,10 @@ export default function DecadeExplorer() {
           <em>Sound Like?</em>
         </h2>
         <p className="section-body" style={{ marginBottom: "56px" }}>
-          Each floating note represents a decade. The position of its colored heads on the
-          staff encodes that decade's average happiness, loudness, acousticness, and
-          danceability. Click any note and the disc transforms to that era's sound.
+          Each floating glyph represents a decade. The colored stems all start from the
+          same top bar, and stem length encodes that decade's average happiness,
+          loudness, acousticness, and danceability. Click any glyph and the disc
+          transforms to that era's sound.
         </p>
 
         <div style={explorerWrap}>

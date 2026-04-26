@@ -1,3 +1,5 @@
+// this file creates a copy for key insights for my genre1 x genre 2 genre correlation part. but my concern is that for multiple decades, th ecopy remains same. I want the flow that I give 5 genre pairs in a dropdown which have the best insights relating to the sadness paradox. From whichever pair I select, the scroll through sections should update the per decade insights dynamically and correctly, and the right should reflect the correct genre chart with only those two highlighted. I need you to tell me how to convey this thing exactly, and then which are the best 5 pairs to show interesting insights relating to the paradox, and then what is the best way to implement this dynamic behavior. FOr example, in the current form, 1960s, 1970s, 1980s all have the same section headings and text
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { normalizeLoudness } from "../utils/dataUtils";
@@ -94,86 +96,91 @@ const CURATED_GENRE_PAIRS = [
     id: "pop-rap",
     genreA: "Pop",
     genreB: "Hip Hop / Rap",
-    label: "Pop × Hip Hop / Rap",
+    label: "Pop \u00d7 Hip Hop / Rap",
     insight:
-      "A mainstream merger where emotional brightness softens while loudness and rhythmic pressure keep climbing.",
+      "A mainstream crossover where lower valence meets louder, rhythm-first production.",
   },
   {
-    id: "indie-classical",
-    genreA: "Indie",
-    genreB: "Classical",
-    label: "Indie × Classical",
+    id: "rap-rb",
+    genreA: "Hip Hop / Rap",
+    genreB: "R&B / Soul",
+    label: "Hip Hop / Rap \u00d7 R&B / Soul",
     insight:
-      "A quieter bridge that tests how melancholy can deepen without giving up texture and space.",
-  },
-  {
-    id: "rb-jazz",
-    genreA: "R&B / Soul",
-    genreB: "Jazz",
-    label: "R&B / Soul × Jazz",
-    insight:
-      "An emotionally rich pairing where softness, groove, and expressive phrasing meet the paradox in a subtler way.",
+      "A vocal-and-beat bridge that shows emotional darkness becoming smoother and more danceable.",
   },
   {
     id: "electronic-pop",
     genreA: "Electronic",
     genreB: "Pop",
-    label: "Electronic × Pop",
+    label: "Electronic \u00d7 Pop",
     insight:
-      "One of the clearest stories of acoustic drop-off as polished synthetic production moves into the center of pop.",
+      "A production-led blend where acoustic texture drops as pop becomes more engineered.",
+  },
+  {
+    id: "pop-rb",
+    genreA: "Pop",
+    genreB: "R&B / Soul",
+    label: "Pop \u00d7 R&B / Soul",
+    insight:
+      "A long-running shared lane for seeing brightness fade while groove and studio pressure remain high.",
   },
   {
     id: "country-rock",
     genreA: "Country",
     genreB: "Rock",
-    label: "Country × Rock",
+    label: "Country \u00d7 Rock",
     insight:
-      "A crossover built on storytelling and drive, useful for seeing when energy rises without fully abandoning organic texture.",
+      "A roots-and-amplifier pairing that tests whether loudness can rise before acoustic identity fades.",
   },
 ];
 
-const CURATED_PAIR_STORY_FRAMES = {
-  "pop-rap": {
-    earlyFrame: "mainstream polish and rhythmic grit still live in different rooms",
-    breakthroughFrame: "the radio center starts absorbing rap's cadence and pressure",
-    matureFrame:
-      "the crossover starts sounding less like borrowing and more like the default mainstream language",
-    paradoxFrame:
-      "the paradox lands here as darker feelings wrapped in highly replayable production",
-  },
-  "indie-classical": {
-    earlyFrame: "the pairing feels more adjacent in sensibility than truly fused",
-    breakthroughFrame:
-      "arrangement, restraint, and melancholy begin to meet in the same tracks",
-    matureFrame:
-      "the blend turns into a chamber-like sadness rather than a loud crossover event",
-    paradoxFrame: "the paradox shows up here with less bombast and more emotional depth",
-  },
-  "rb-jazz": {
-    earlyFrame:
-      "shared phrasing is there early, but the overlap still behaves like influence more than fusion",
-    breakthroughFrame:
-      "groove and improvisational color begin occupying the same emotional space",
-    matureFrame: "the crossover settles into a silky, low-friction emotional lane",
-    paradoxFrame:
-      "the paradox becomes more intimate here, less about brute force and more about mood saturation",
-  },
-  "electronic-pop": {
-    earlyFrame: "synthetic polish still sits at the edge of the pop mainstream",
-    breakthroughFrame:
-      "electronic texture stops feeling like an accent and starts steering the whole record",
-    matureFrame: "the hybrid hardens into a clean, fully engineered pop surface",
-    paradoxFrame:
-      "the paradox is strongest here when emotional brightness drops but the production gets even more addictive",
-  },
-  "country-rock": {
-    earlyFrame:
-      "the relationship begins in shared instruments and attitude more than explicit co-tagging",
-    breakthroughFrame: "storytelling and arena-scale momentum begin to travel together",
-    matureFrame: "the blend becomes a durable middle ground between drive and rootsiness",
-    paradoxFrame:
-      "the paradox stays partial here because force rises faster than acoustic texture disappears",
-  },
+const MEANINGFUL_OVERLAP_COUNT = 10;
+const SIGNAL_THRESHOLDS = {
+  overlapCount: 0.08,
+  valence: 0.04,
+  loudness: 0.04,
+  acousticness: 0.04,
+  danceability: 0.035,
+};
+
+const PHASE_TITLE_OPTIONS = {
+  "separate-worlds": [
+    "Separate worlds, for now.",
+    "The overlap is still thin.",
+    "Two lanes, not one bridge yet.",
+  ],
+  "bridge-begins": [
+    "The bridge begins.",
+    "A shared lane appears.",
+    "The first real overlap arrives.",
+  ],
+  "crossover-accelerates": [
+    "The crossover accelerates.",
+    "The connection picks up speed.",
+    "The shared catalog jumps.",
+    "The bridge gets busier.",
+    "The crossover moves into view.",
+  ],
+  "fusion-peak": [
+    "The fusion reaches its strongest point.",
+    "The overlap hits its peak.",
+    "The pair is most fused here.",
+  ],
+  "paradox-visible": [
+    "The paradox becomes visible.",
+    "The sadness paradox sharpens.",
+    "The darker-louder pattern comes through.",
+  ],
+  "connection-cools": [
+    "The connection cools.",
+    "The shared lane narrows.",
+    "The crossover eases back.",
+  ],
+  "shared-evolving": [
+    "The shared sound keeps evolving.",
+    "The blend keeps changing shape.",
+    "The connection holds, but shifts.",
+  ],
 };
 
 const parseArrayString = (str) => {
@@ -187,7 +194,10 @@ const parseArrayString = (str) => {
 
 const normalizeName = (name) => {
   if (!name) return "";
-  return name.replace(/[[\]"'`]/g, "").trim().toLowerCase();
+  return name
+    .replace(/[[\]"'`]/g, "")
+    .trim()
+    .toLowerCase();
 };
 
 const getMacroGenres = (microGenres) => {
@@ -195,7 +205,11 @@ const getMacroGenres = (microGenres) => {
   microGenres.forEach((genre) => {
     const lower = genre.toLowerCase();
     if (lower.includes("pop")) macros.add("Pop");
-    if (lower.includes("hip hop") || lower.includes("rap") || lower.includes("trap")) {
+    if (
+      lower.includes("hip hop") ||
+      lower.includes("rap") ||
+      lower.includes("trap")
+    ) {
       macros.add("Hip Hop / Rap");
     }
     if (lower.includes("rock")) macros.add("Rock");
@@ -210,7 +224,11 @@ const getMacroGenres = (microGenres) => {
       macros.add("Electronic");
     }
     if (lower.includes("indie")) macros.add("Indie");
-    if (lower.includes("r&b") || lower.includes("soul") || lower.includes("blues")) {
+    if (
+      lower.includes("r&b") ||
+      lower.includes("soul") ||
+      lower.includes("blues")
+    ) {
       macros.add("R&B / Soul");
     }
     if (lower.includes("jazz")) macros.add("Jazz");
@@ -222,7 +240,8 @@ const getMacroGenres = (microGenres) => {
     ) {
       macros.add("Classical");
     }
-    if (lower.includes("country") || lower.includes("folk")) macros.add("Country");
+    if (lower.includes("country") || lower.includes("folk"))
+      macros.add("Country");
   });
   return Array.from(macros);
 };
@@ -238,6 +257,7 @@ function initMetricBucket(label) {
     valence: 0,
     loudness: 0,
     acousticness: 0,
+    danceability: 0,
   };
 }
 
@@ -248,6 +268,7 @@ function metricFromBucket(bucket) {
       valence: null,
       loudness: null,
       acousticness: null,
+      danceability: null,
     };
   }
 
@@ -256,21 +277,13 @@ function metricFromBucket(bucket) {
     valence: bucket.valence / bucket.count,
     loudness: bucket.loudness / bucket.count,
     acousticness: bucket.acousticness / bucket.count,
+    danceability: bucket.danceability / bucket.count,
   };
 }
 
 function formatPct(value) {
   if (value == null || Number.isNaN(value)) return "n/a";
   return `${Math.round(value * 100)}%`;
-}
-
-function formatDelta(current, baseline, invert = false) {
-  if (current == null || baseline == null) return "No baseline yet";
-  const raw = current - baseline;
-  const magnitude = Math.abs(Math.round(raw * 100));
-  if (magnitude === 0) return "Holding steady";
-  const positiveMeans = invert ? raw < 0 : raw > 0;
-  return `${positiveMeans ? "+" : "-"}${magnitude} pts vs first decade`;
 }
 
 function profileForGenre(name) {
@@ -308,6 +321,15 @@ function describeAcousticness(value) {
   return "almost fully synthetic in feel";
 }
 
+function describeDanceability(value) {
+  if (value == null) return "hard to place rhythmically";
+  if (value >= 0.72) return "highly danceable";
+  if (value >= 0.62) return "built around movement";
+  if (value >= 0.52) return "moderately danceable";
+  if (value >= 0.42) return "more head-nod than floor-ready";
+  return "rhythmically restrained";
+}
+
 function describeBridgeStrength(rate) {
   if (rate >= 0.24) return "a real shared lane";
   if (rate >= 0.14) return "an active crossover channel";
@@ -316,127 +338,298 @@ function describeBridgeStrength(rate) {
   return "barely connected yet";
 }
 
-function compareMetric(shared, a, b, metric, labels) {
-  if (shared == null || a == null || b == null) {
-    return labels.middle;
-  }
-
-  const distA = Math.abs(shared - a);
-  const distB = Math.abs(shared - b);
-  const diff = Math.abs(distA - distB);
-
-  if (diff < 0.035) return labels.middle;
-  return distA < distB ? labels.a : labels.b;
+function metricDelta(current, comparison) {
+  if (current == null || comparison == null) return null;
+  return current - comparison;
 }
 
-function paradoxScore(shared) {
-  if (!shared || shared.valence == null || shared.loudness == null || shared.acousticness == null) {
+function computeDeltaSet(current, comparison) {
+  if (!comparison) return null;
+  return {
+    overlapCount: current.overlapCount - comparison.overlapCount,
+    overlapRate: current.overlapRate - comparison.overlapRate,
+    valence: metricDelta(current.shared.valence, comparison.shared.valence),
+    loudness: metricDelta(current.shared.loudness, comparison.shared.loudness),
+    acousticness: metricDelta(
+      current.shared.acousticness,
+      comparison.shared.acousticness,
+    ),
+    danceability: metricDelta(
+      current.shared.danceability,
+      comparison.shared.danceability,
+    ),
+  };
+}
+
+function formatSignedPoints(delta) {
+  if (delta == null || Number.isNaN(delta)) return "n/a";
+  const points = Math.round(delta * 100);
+  if (points === 0) return "flat";
+  return `${points > 0 ? "+" : ""}${points} pts`;
+}
+
+function formatMetricDeltaFromBaseline(delta, metric) {
+  if (delta == null || Number.isNaN(delta)) return "No baseline yet";
+  const points = Math.round(delta * 100);
+  if (points === 0) return "Flat vs baseline";
+  const betterForParadox =
+    (metric === "valence" || metric === "acousticness")
+      ? points < 0
+      : points > 0;
+  return `${betterForParadox ? "+" : "-"}${Math.abs(points)} pts vs baseline`;
+}
+
+function formatCountDelta(delta) {
+  if (delta == null || Number.isNaN(delta)) return "No baseline yet";
+  if (delta === 0) return "Flat vs baseline";
+  return `${delta > 0 ? "+" : ""}${delta.toLocaleString()} vs baseline`;
+}
+
+function metricDirection(metric, delta) {
+  if (delta == null || Number.isNaN(delta)) return "unclear";
+  if (Math.abs(delta) < 0.01) {
+    if (metric === "valence") return "not clearly darker or brighter";
+    if (metric === "loudness") return "not clearly louder or softer";
+    if (metric === "acousticness")
+      return "not clearly more or less acoustic";
+    if (metric === "danceability")
+      return "not clearly more or less danceable";
+    return "stable";
+  }
+
+  const directions = {
+    valence: delta < 0 ? "darker" : "brighter",
+    loudness: delta > 0 ? "louder" : "softer",
+    acousticness: delta < 0 ? "less acoustic" : "more acoustic",
+    danceability: delta > 0 ? "more danceable" : "less danceable",
+    overlapCount: delta > 0 ? "more connected" : "less connected",
+  };
+
+  return directions[metric] || "changed";
+}
+
+function metricSignalLabel(metric) {
+  return {
+    overlapCount: "overlap",
+    valence: "valence",
+    loudness: "loudness",
+    acousticness: "acousticness",
+    danceability: "danceability",
+  }[metric];
+}
+
+function describeMetricSignal(signal) {
+  if (!signal || !signal.meaningful) return "No single metric moves enough to dominate this decade.";
+  if (signal.key === "overlapCount") {
+    return `The strongest move is overlap itself: ${signal.rawDelta > 0 ? "+" : ""}${signal.rawDelta.toLocaleString()} shared tracks from the previous decade.`;
+  }
+  return `The strongest move is ${metricSignalLabel(signal.key)}, shifting ${formatSignedPoints(signal.rawDelta)} ${metricDirection(signal.key, signal.rawDelta)} from the previous decade.`;
+}
+
+function computeParadoxScore(shared, baseline) {
+  if (
+    !shared ||
+    shared.valence == null ||
+    shared.loudness == null ||
+    shared.acousticness == null ||
+    shared.danceability == null
+  ) {
     return 0;
   }
 
-  return (
+  const absoluteSignal =
     Math.max(0, 0.55 - shared.valence) * 2.2 +
     Math.max(0, shared.loudness - 0.56) * 1.8 +
-    Math.max(0, 0.32 - shared.acousticness) * 2
-  );
+    Math.max(0, 0.32 - shared.acousticness) * 2 +
+    Math.max(0, shared.danceability - 0.62) * 0.8;
+
+  if (!baseline?.shared) return absoluteSignal;
+
+  const directionalSignal =
+    Math.max(0, baseline.shared.valence - shared.valence) * 1.2 +
+    Math.max(0, shared.loudness - baseline.shared.loudness) * 1.1 +
+    Math.max(0, baseline.shared.acousticness - shared.acousticness) * 1.1 +
+    Math.max(0, shared.danceability - baseline.shared.danceability) * 0.7;
+
+  return absoluteSignal + directionalSignal;
 }
 
-function describeParadox(shared) {
-  const score = paradoxScore(shared);
-  if (score >= 0.9) return "the sadness paradox is fully audible";
-  if (score >= 0.55) return "the sadness paradox is clearly taking shape";
-  if (score >= 0.28) return "the sadness paradox is starting to peek through";
-  return "the sadness paradox is still faint here";
+function describeParadoxLevel(score) {
+  if (score >= 0.9) return "strong";
+  if (score >= 0.55) return "clear";
+  if (score >= 0.28) return "emerging";
+  return "faint";
 }
 
-function describeStoryPhase(stat, previous, baseline, peakOverlap) {
-  if (!stat.overlapCount) return "distant";
-  if (previous && stat.overlapCount - previous.overlapCount > 18) return "breakthrough";
-  if (peakOverlap > 0 && stat.overlapCount >= peakOverlap * 0.72) return "mature";
-  if (baseline?.overlapCount && stat.overlapCount <= baseline.overlapCount * 1.15) {
-    return "tentative";
+function classifyOverlapTrend(entry, previous, peakOverlap) {
+  if (!previous || !entry.isMeaningfulOverlap) return "stable";
+  const countDelta = entry.overlapCount - previous.overlapCount;
+  const rateDelta = entry.overlapRate - previous.overlapRate;
+  const countThreshold = Math.max(20, peakOverlap * 0.08, previous.overlapCount * 0.2);
+
+  if (countDelta >= countThreshold || rateDelta >= 0.035) {
+    return "accelerating";
   }
-  return "developing";
-}
-
-function pairNarrativeFrame(pairConfig, phase) {
-  if (!pairConfig) return "";
-  if (phase === "distant" || phase === "tentative") return pairConfig.earlyFrame;
-  if (phase === "breakthrough" || phase === "developing") {
-    return pairConfig.breakthroughFrame;
+  if (countDelta <= -countThreshold || rateDelta <= -0.035) {
+    return "declining";
   }
-  return pairConfig.matureFrame;
+  return "stable";
 }
 
-function makeStoryCopy(stat, previous, genreA, genreB, baseline, pairConfig, peakOverlap) {
-  const overlapDelta = previous ? stat.overlapCount - previous.overlapCount : 0;
-  const sharedValence = stat.shared.valence;
-  const sharedLoudness = stat.shared.loudness;
-  const sharedAcousticness = stat.shared.acousticness;
-  const phase = describeStoryPhase(stat, previous, baseline, peakOverlap);
+function findStrongestSignal(stat, peakOverlap) {
+  const deltas = stat.deltaFromPrevious;
+  if (!deltas) return null;
 
+  const candidates = [
+    {
+      key: "overlapCount",
+      rawDelta: deltas.overlapCount,
+      strength: Math.abs(deltas.overlapCount) / Math.max(peakOverlap, 1),
+      threshold: SIGNAL_THRESHOLDS.overlapCount,
+    },
+    ...["valence", "loudness", "acousticness", "danceability"].map((key) => ({
+      key,
+      rawDelta: deltas[key],
+      strength: Math.abs(deltas[key] || 0),
+      threshold: SIGNAL_THRESHOLDS[key],
+    })),
+  ].filter((candidate) => candidate.rawDelta != null);
+
+  if (!candidates.length) return null;
+  const strongest = candidates.sort((a, b) => b.strength - a.strength)[0];
+  return {
+    ...strongest,
+    meaningful: strongest.strength >= strongest.threshold,
+    direction: metricDirection(strongest.key, strongest.rawDelta),
+  };
+}
+
+function classifyStoryPhase(stat) {
+  if (!stat.isMeaningfulOverlap) return "separate-worlds";
+  if (stat.firstMeaningfulOverlap) return "bridge-begins";
+  if (stat.overlapTrend === "accelerating") return "crossover-accelerates";
+  if (stat.peakOverlap) return "fusion-peak";
+  if (stat.strongParadoxSignal) return "paradox-visible";
+  if (stat.overlapTrend === "declining") return "connection-cools";
+  return "shared-evolving";
+}
+
+function stableTitleIndex(stat, genreA, genreB, optionCount) {
+  const seed = `${genreA}|${genreB}|${stat.decade}|${stat.phase}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) % 9973;
+  }
+  return hash % optionCount;
+}
+
+function phaseTitle(phase, stat, genreA, genreB) {
+  const options = PHASE_TITLE_OPTIONS[phase];
+  if (options?.length) {
+    return options[stableTitleIndex(stat, genreA, genreB, options.length)];
+  }
+
+  const signal = stat.strongestSignal;
+  if (signal?.meaningful && signal.key !== "overlapCount") {
+    return `The shared sound turns ${signal.direction}.`;
+  }
+  return `${genreA} and ${genreB} keep evolving together.`;
+}
+
+function generateParadoxTakeaway(stat) {
+  if (!stat.isMeaningfulOverlap) {
+    return "Paradox takeaway: the shared-track sample is too small to say whether this pair is becoming darker, louder, less acoustic, or more danceable yet.";
+  }
+
+  if (stat.firstMeaningfulOverlap) {
+    return "Paradox takeaway: this decade sets the pair's baseline; later decades show whether the shared sound becomes darker or brighter, louder or softer, less or more acoustic, and more or less danceable.";
+  }
+
+  const baseline = stat.deltaFromBaseline;
+  const level = describeParadoxLevel(stat.paradoxScore);
+  return `Paradox takeaway: compared with the first meaningful overlap decade, the pair is ${metricDirection("valence", baseline.valence)}, ${metricDirection("loudness", baseline.loudness)}, ${metricDirection("acousticness", baseline.acousticness)}, and ${metricDirection("danceability", baseline.danceability)}. That ${level} signal suggests the sadness paradox is ${stat.strongParadoxSignal ? "strongly present" : "present but not dominant"} here.`;
+}
+
+function generateStoryCopy(stat, genreA, genreB, pairConfig) {
   const profileA = profileForGenre(genreA);
   const profileB = profileForGenre(genreB);
-  const bridgeStrength = describeBridgeStrength(stat.overlapRate);
-  const frame = pairNarrativeFrame(pairConfig, phase);
-  const moodPull = compareMetric(
-    sharedValence,
-    stat.genreAStats.valence,
-    stat.genreBStats.valence,
-    "valence",
-    {
-      a: `${genreA}'s emotional center`,
-      b: `${genreB}'s emotional center`,
-      middle: "a midpoint between the two moods",
-    },
-  );
-  const loudnessPull = compareMetric(
-    sharedLoudness,
-    stat.genreAStats.loudness,
-    stat.genreBStats.loudness,
-    "loudness",
-    {
-      a: `${genreA}'s punch`,
-      b: `${genreB}'s punch`,
-      middle: "a shared dynamic level",
-    },
-  );
-  const texturePull = compareMetric(
-    sharedAcousticness,
-    stat.genreAStats.acousticness,
-    stat.genreBStats.acousticness,
-    "acousticness",
-    {
-      a: `${genreA}'s texture`,
-      b: `${genreB}'s texture`,
-      middle: "a blended texture",
-    },
-  );
+  const title = phaseTitle(stat.phase, stat, genreA, genreB);
 
-  let title = `${genreA} and ${genreB} are still circling each other.`;
-  if (phase === "breakthrough") {
-    title = `${genreA} and ${genreB} suddenly start sharing real musical ground.`;
-  } else if (phase === "developing" && stat.overlapCount > 0 && overlapDelta > 6) {
-    title = `${genreA} starts borrowing more openly from ${genreB}, and vice versa.`;
-  } else if (stat.overlapCount > 0 && overlapDelta < -12) {
-    title = `${genreA} and ${genreB} stay linked, but the crossover cools for a decade.`;
-  } else if (phase === "mature") {
-    title = `${genreA} and ${genreB} settle into a durable shared sound.`;
-  } else if (stat.overlapCount > 0 && stat.overlapRate >= 0.14) {
-    title = `${genreA} and ${genreB} now share a recognizable crossover lane.`;
-  } else if (stat.overlapCount > 0) {
-    title = `${genreA} and ${genreB} keep trading ideas in selective ways.`;
+  if (!stat.isMeaningfulOverlap) {
+    const body = `In the ${stat.decade}s, ${genreA} and ${genreB} produce ${stat.overlapCount.toLocaleString()} shared tracks, below the ${MEANINGFUL_OVERLAP_COUNT}-track floor for a stable reading. The data shows ${profileA.identity} and ${profileB.identity} nearby, but not enough shared catalog to force a crossover insight.`;
+    return {
+      title,
+      body,
+      paradox: generateParadoxTakeaway(stat),
+    };
   }
 
-  const body = stat.overlapCount
-    ? `In the ${stat.decade}s, ${genreA}'s ${profileA.identity} meets ${genreB}'s ${profileB.identity}, and ${frame}. We found ${stat.overlapCount.toLocaleString()} shared tracks, which makes this connection feel like ${bridgeStrength} rather than a coincidence. The overlap sounds ${describeValence(sharedValence)}, ${describeLoudness(sharedLoudness)}, and ${describeAcousticness(sharedAcousticness)}. Emotionally it leans toward ${moodPull}, dynamically it lands closer to ${loudnessPull}, and texturally it feels nearest to ${texturePull}.`
-    : `In the ${stat.decade}s, ${genreA} and ${genreB} are more adjacent than fused. ${genreA} reads as ${profileA.energy} while ${genreB} feels ${profileB.energy}, and ${frame}. The shared catalog is still too thin to form a stable hybrid, which makes any later convergence feel earned instead of automatic.`;
+  const bridgeStrength = describeBridgeStrength(stat.overlapRate);
+  const signalSentence = describeMetricSignal(stat.strongestSignal);
+  const trendSentence =
+    stat.overlapTrend === "accelerating"
+      ? "The overlap is accelerating from the previous decade."
+      : stat.overlapTrend === "declining"
+        ? "The overlap is declining from the previous decade."
+        : "The overlap is relatively stable from the previous decade.";
 
-  const paradox = stat.overlapCount
-    ? `This is the point where ${describeParadox(stat.shared)}. For this pairing, that means ${pairConfig?.paradoxFrame || "the emotional drop, loudness rise, and acoustic thinning are beginning to align"}. Compared with the first decade that produced real overlap, the shared tracks are ${formatDelta(sharedValence, baseline.shared.valence)} in valence, ${formatDelta(sharedLoudness, baseline.shared.loudness)} in loudness, and ${formatDelta(sharedAcousticness, baseline.shared.acousticness, true)} in acousticness. In plain terms, the blend is moving ${sharedValence != null && baseline.shared.valence != null && sharedValence < baseline.shared.valence ? "darker" : "lighter"}, ${sharedLoudness != null && baseline.shared.loudness != null && sharedLoudness > baseline.shared.loudness ? "louder" : "softer"}, and ${sharedAcousticness != null && baseline.shared.acousticness != null && sharedAcousticness < baseline.shared.acousticness ? "less acoustic" : "more acoustic"} than its own starting point.`
-    : `The sadness paradox is still mostly outside the shared space here. You can already see the ingredients sitting in the separate scenes, but the overlap is too thin for the emotional drop, volume lift, and acoustic fade to register as one combined story yet.`;
+  const body = `In the ${stat.decade}s, ${genreA}'s ${profileA.identity} and ${genreB}'s ${profileB.identity} share ${stat.overlapCount.toLocaleString()} tracks, or ${formatPct(stat.overlapRate)} of their combined lane. That reads as ${bridgeStrength}. The shared tracks are ${describeValence(stat.shared.valence)}, ${describeLoudness(stat.shared.loudness)}, ${describeAcousticness(stat.shared.acousticness)}, and ${describeDanceability(stat.shared.danceability)}. ${signalSentence} ${trendSentence} ${pairConfig?.insight || ""}`;
 
-  return { title, body, paradox };
+  return {
+    title,
+    body,
+    paradox: generateParadoxTakeaway(stat),
+  };
+}
+
+function enrichPairDecade(entry, index, story, baseline, peakOverlap, pairConfig) {
+  const previous = story[index - 1] || null;
+  const baselineForDelta = entry.isMeaningfulOverlap ? baseline : null;
+  const deltaFromPrevious = computeDeltaSet(entry, previous);
+  const deltaFromBaseline = !baselineForDelta
+    ? {
+        overlapCount: null,
+        overlapRate: null,
+        valence: null,
+        loudness: null,
+        acousticness: null,
+        danceability: null,
+      }
+    : entry.decade !== baselineForDelta.decade
+      ? computeDeltaSet(entry, baselineForDelta)
+      : {
+          overlapCount: 0,
+          overlapRate: 0,
+          valence: 0,
+          loudness: 0,
+          acousticness: 0,
+          danceability: 0,
+        };
+
+  const enriched = {
+    ...entry,
+    baselineDecade: baseline?.decade || null,
+    deltaFromPrevious,
+    deltaFromBaseline,
+    firstMeaningfulOverlap:
+      entry.isMeaningfulOverlap && entry.decade === baseline?.decade,
+    peakOverlap:
+      entry.isMeaningfulOverlap &&
+      peakOverlap > 0 &&
+      entry.overlapCount === peakOverlap,
+  };
+
+  enriched.overlapTrend = classifyOverlapTrend(enriched, previous, peakOverlap);
+  enriched.strongestSignal = findStrongestSignal(enriched, peakOverlap);
+  enriched.paradoxScore = computeParadoxScore(enriched.shared, baseline);
+  enriched.strongParadoxSignal =
+    enriched.isMeaningfulOverlap && enriched.paradoxScore >= 0.72;
+  enriched.phase = classifyStoryPhase(enriched);
+
+  return {
+    ...enriched,
+    ...generateStoryCopy(enriched, entry.genreA, entry.genreB, pairConfig),
+  };
 }
 
 function buildPairStory(decadeData, genreA, genreB, pairConfig) {
@@ -465,42 +658,43 @@ function buildPairStory(decadeData, genreA, genreB, pairConfig) {
 
     return {
       decade,
+      genreA,
+      genreB,
       genreAStats,
       genreBStats,
       shared: sharedStats,
       overlapCount: sharedStats.count,
       overlapRate,
+      isMeaningfulOverlap: sharedStats.count >= MEANINGFUL_OVERLAP_COUNT,
       matrix: decadeEntry.matrix,
     };
   });
 
-  const baseline = story.find((entry) => entry.shared.count > 0) || story[0];
-  const peakOverlap = d3.max(story, (entry) => entry.overlapCount) || 0;
+  const meaningfulStory = story.filter((entry) => entry.isMeaningfulOverlap);
+  const baseline = meaningfulStory[0] || story.find((entry) => entry.shared.count > 0) || story[0];
+  const peakOverlap = d3.max(meaningfulStory, (entry) => entry.overlapCount) || 0;
 
-  return story.map((entry, index) => {
-    const copy = makeStoryCopy(
-      entry,
-      story[index - 1],
-      genreA,
-      genreB,
-      baseline,
-      pairConfig,
-      peakOverlap,
-    );
-    return {
-      ...entry,
-      ...copy,
-    };
-  });
+  return story.map((entry, index) =>
+    enrichPairDecade(entry, index, story, baseline, peakOverlap, pairConfig),
+  );
 }
 
 function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
-  const active = storyData[activeIndex];
+  const active =
+    storyData[Math.min(activeIndex, storyData.length - 1)] || storyData[0];
   const bridgeStrength = Math.max(0.08, active.overlapRate);
-  const selectedIndices = [GENRE_NAMES.indexOf(genreA), GENRE_NAMES.indexOf(genreB)];
+  const selectedIndices = [
+    GENRE_NAMES.indexOf(genreA),
+    GENRE_NAMES.indexOf(genreB),
+  ];
   const selectedPairKey = pairKey(genreA, genreB);
-  const storyChords = d3.chord().padAngle(0.045).sortSubgroups(d3.descending)(active.matrix);
-  const storyArc = d3.arc().innerRadius(storyInnerRadius).outerRadius(storyOuterRadius);
+  const storyChords = d3.chord().padAngle(0.045).sortSubgroups(d3.descending)(
+    active.matrix,
+  );
+  const storyArc = d3
+    .arc()
+    .innerRadius(storyInnerRadius)
+    .outerRadius(storyOuterRadius);
   const storyRibbon = d3.ribbon().radius(storyInnerRadius);
 
   const groupOpacity = (index) => {
@@ -523,7 +717,8 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
     const targetName = GENRE_NAMES[chord.target.index];
     const chordKey = pairKey(sourceName, targetName);
     const touchesSelected =
-      selectedIndices.includes(chord.source.index) || selectedIndices.includes(chord.target.index);
+      selectedIndices.includes(chord.source.index) ||
+      selectedIndices.includes(chord.target.index);
     const isPrimary = chordKey === selectedPairKey;
 
     return {
@@ -548,20 +743,28 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
       <div style={storyHeader}>
         <p style={storyEyebrow}>Selected pair</p>
         <div style={genreRow}>
-          <span style={{ ...genreChip, borderColor: `${color(0)}33` }}>{genreA}</span>
-          <span style={genreConnector}>×</span>
-          <span style={{ ...genreChip, borderColor: `${color(1)}33` }}>{genreB}</span>
+          <span style={{ ...genreChip, borderColor: `${color(0)}33` }}>
+            {genreA}
+          </span>
+          <span style={genreConnector}>{"\u00d7"}</span>
+          <span style={{ ...genreChip, borderColor: `${color(1)}33` }}>
+            {genreB}
+          </span>
         </div>
         <p style={storySubhead}>
-          Scroll through the decades to see when these genres start overlapping and how
-          their shared songs drift toward the sadness paradox.
+          Scroll through the decades to see when these genres start overlapping
+          and how their shared songs drift toward the sadness paradox.
         </p>
       </div>
 
       <div style={storyChordCard}>
         <div style={timelineLabelRow}>
-          <span style={timelineLabel}>Chord snapshot in the {active.decade}s</span>
-          <span style={timelineValue}>{active.overlapCount.toLocaleString()} shared tracks</span>
+          <span style={timelineLabel}>
+            Chord snapshot in the {active.decade}s
+          </span>
+          <span style={timelineValue}>
+            {active.overlapCount.toLocaleString()} shared tracks
+          </span>
         </div>
         <svg
           width={STORY_CHORD_SIZE}
@@ -623,8 +826,9 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
           </g>
         </svg>
         <p style={storyChordNote}>
-          The selected pair stays bright so you can read how it sits inside the broader
-          genre network for this decade. Everything else remains visible, but quieter.
+          The selected pair stays bright so you can read how it sits inside the
+          broader genre network for this decade. Everything else remains
+          visible, but quieter.
         </p>
       </div>
 
@@ -643,26 +847,55 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
       <div style={metricGrid}>
         {[
           {
+            label: "Shared tracks",
+            value: active.overlapCount.toLocaleString(),
+            note: formatCountDelta(active.deltaFromBaseline?.overlapCount),
+            color: "#f4a261",
+          },
+          {
+            label: "Overlap rate",
+            value: formatPct(active.overlapRate),
+            note: formatMetricDeltaFromBaseline(
+              active.deltaFromBaseline?.overlapRate,
+              "overlapCount",
+            ),
+            color: "#22d3ee",
+          },
+          {
             label: "Shared valence",
             value: formatPct(active.shared.valence),
-            note: formatDelta(active.shared.valence, storyData[0]?.shared.valence),
-            color: "#f4a261",
+            note: formatMetricDeltaFromBaseline(
+              active.deltaFromBaseline?.valence,
+              "valence",
+            ),
+            color: "#fb7185",
           },
           {
             label: "Shared loudness",
             value: formatPct(active.shared.loudness),
-            note: formatDelta(active.shared.loudness, storyData[0]?.shared.loudness),
+            note: formatMetricDeltaFromBaseline(
+              active.deltaFromBaseline?.loudness,
+              "loudness",
+            ),
             color: "#e9c46a",
           },
           {
             label: "Shared acousticness",
             value: formatPct(active.shared.acousticness),
-            note: formatDelta(
-              active.shared.acousticness,
-              storyData[0]?.shared.acousticness,
-              true,
+            note: formatMetricDeltaFromBaseline(
+              active.deltaFromBaseline?.acousticness,
+              "acousticness",
             ),
             color: "#457b9d",
+          },
+          {
+            label: "Shared danceability",
+            value: formatPct(active.shared.danceability),
+            note: formatMetricDeltaFromBaseline(
+              active.deltaFromBaseline?.danceability,
+              "danceability",
+            ),
+            color: "#1db954",
           },
         ].map((item) => (
           <div key={item.label} style={metricCard(item.color)}>
@@ -674,16 +907,22 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
       </div>
 
       <div style={genreCompareRow}>
-        {[{ label: genreA, stats: active.genreAStats }, { label: genreB, stats: active.genreBStats }].map(
-          ({ label, stats }) => (
-            <div key={label} style={genreCompareCard}>
-              <p style={genreCompareTitle}>{label}</p>
-              <p style={genreCompareText}>Valence {formatPct(stats.valence)}</p>
-              <p style={genreCompareText}>Loudness {formatPct(stats.loudness)}</p>
-              <p style={genreCompareText}>Acousticness {formatPct(stats.acousticness)}</p>
-            </div>
-          ),
-        )}
+        {[
+          { label: genreA, stats: active.genreAStats },
+          { label: genreB, stats: active.genreBStats },
+        ].map(({ label, stats }) => (
+          <div key={label} style={genreCompareCard}>
+            <p style={genreCompareTitle}>{label}</p>
+            <p style={genreCompareText}>Valence {formatPct(stats.valence)}</p>
+            <p style={genreCompareText}>Loudness {formatPct(stats.loudness)}</p>
+            <p style={genreCompareText}>
+              Acousticness {formatPct(stats.acousticness)}
+            </p>
+            <p style={genreCompareText}>
+              Danceability {formatPct(stats.danceability)}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -707,11 +946,17 @@ function LegacyChordExplorer({
   const checkHighlight = (c) => {
     if (hoveredGroupIdx === null && hoveredRibbon === null) return true;
     if (hoveredGroupIdx !== null) {
-      return c.source.index === hoveredGroupIdx || c.target.index === hoveredGroupIdx;
+      return (
+        c.source.index === hoveredGroupIdx || c.target.index === hoveredGroupIdx
+      );
     }
     if (hoveredRibbon !== null) {
-      return c.source.index === hoveredRibbon.s || c.target.index === hoveredRibbon.s ||
-        c.source.index === hoveredRibbon.t || c.target.index === hoveredRibbon.t;
+      return (
+        c.source.index === hoveredRibbon.s ||
+        c.target.index === hoveredRibbon.s ||
+        c.source.index === hoveredRibbon.t ||
+        c.target.index === hoveredRibbon.t
+      );
     }
     return false;
   };
@@ -719,9 +964,24 @@ function LegacyChordExplorer({
   return (
     <>
       <div style={styles.filterBar}>
-        <div style={{ ...styles.filterGroup, flex: 1, maxWidth: "600px", margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-            <label style={styles.label}>Timeline scrubber ({yearRange.min} - {yearRange.max})</label>
+        <div
+          style={{
+            ...styles.filterGroup,
+            flex: 1,
+            maxWidth: "600px",
+            margin: "0 auto",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "8px",
+            }}
+          >
+            <label style={styles.label}>
+              Timeline scrubber ({yearRange.min} - {yearRange.max})
+            </label>
             <span style={styles.valueBadge}>{currentYear}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -755,25 +1015,43 @@ function LegacyChordExplorer({
       <div style={styles.card}>
         <div style={styles.infoPanel}>
           {hoveredRibbon ? (
-            <div style={{ ...styles.statCard, borderColor: color(hoveredRibbon.s) }}>
+            <div
+              style={{
+                ...styles.statCard,
+                borderColor: color(hoveredRibbon.s),
+              }}
+            >
               <span style={styles.genrePair}>
                 {GENRE_NAMES[hoveredRibbon.s]} → {GENRE_NAMES[hoveredRibbon.t]}
               </span>
               <span style={styles.value}>
-                <strong>{hoveredRibbon.value.toLocaleString()}</strong> crossover tracks
+                <strong>{hoveredRibbon.value.toLocaleString()}</strong>{" "}
+                crossover tracks
               </span>
             </div>
           ) : hoveredGroupIdx !== null ? (
-            <div style={{ ...styles.statCard, borderColor: color(hoveredGroupIdx) }}>
+            <div
+              style={{
+                ...styles.statCard,
+                borderColor: color(hoveredGroupIdx),
+              }}
+            >
               <span style={styles.genrePair}>
                 Total crossovers for {GENRE_NAMES[hoveredGroupIdx]}
               </span>
               <span style={styles.value}>
-                <strong>{Math.round(chords.groups[hoveredGroupIdx].value).toLocaleString()}</strong> tracks
+                <strong>
+                  {Math.round(
+                    chords.groups[hoveredGroupIdx].value,
+                  ).toLocaleString()}
+                </strong>{" "}
+                tracks
               </span>
             </div>
           ) : (
-            <div style={styles.instructions}>Hover over a bridge or genre to see overlap counts</div>
+            <div style={styles.instructions}>
+              Hover over a bridge or genre to see overlap counts
+            </div>
           )}
         </div>
 
@@ -842,10 +1120,17 @@ function LegacyChordExplorer({
                           ? "rotate(180) translate(-30)"
                           : ""
                       }`}
-                      textAnchor={(g.startAngle + g.endAngle) / 2 > Math.PI ? "end" : "start"}
+                      textAnchor={
+                        (g.startAngle + g.endAngle) / 2 > Math.PI
+                          ? "end"
+                          : "start"
+                      }
                       style={{
                         fontSize: 12,
-                        fill: hoveredGroupIdx === i ? "var(--text)" : "var(--muted)",
+                        fill:
+                          hoveredGroupIdx === i
+                            ? "var(--text)"
+                            : "var(--muted)",
                         fontWeight: hoveredGroupIdx === i ? 800 : 600,
                         pointerEvents: "none",
                         transition:
@@ -876,13 +1161,15 @@ export default function GenreChordDiagram() {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const [selectedPairId, setSelectedPairId] = useState(CURATED_GENRE_PAIRS[0].id);
+  const [selectedPairId, setSelectedPairId] = useState(
+    CURATED_GENRE_PAIRS[0].id,
+  );
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
   const stepRefs = useRef([]);
 
   const selectedPair =
-    CURATED_GENRE_PAIRS.find((pair) => pair.id === selectedPairId) || CURATED_GENRE_PAIRS[0];
-  const selectedPairStoryFrame = CURATED_PAIR_STORY_FRAMES[selectedPair.id] || null;
+    CURATED_GENRE_PAIRS.find((pair) => pair.id === selectedPairId) ||
+    CURATED_GENRE_PAIRS[0];
   const selectedGenreA = selectedPair.genreA;
   const selectedGenreB = selectedPair.genreB;
 
@@ -945,13 +1232,15 @@ export default function GenreChordDiagram() {
 
           uniqueMacros.forEach((macro) => {
             if (!processedDecadeData[decade].genres[macro]) {
-              processedDecadeData[decade].genres[macro] = initMetricBucket(macro);
+              processedDecadeData[decade].genres[macro] =
+                initMetricBucket(macro);
             }
             const bucket = processedDecadeData[decade].genres[macro];
             bucket.count += 1;
             bucket.valence += +track.valence || 0;
             bucket.loudness += normalizeLoudness(+track.loudness);
             bucket.acousticness += +track.acousticness || 0;
+            bucket.danceability += +track.danceability || 0;
           });
 
           if (uniqueMacros.length > 1) {
@@ -971,13 +1260,15 @@ export default function GenreChordDiagram() {
 
                 const key = pairKey(genreA, genreB);
                 if (!processedDecadeData[decade].pairs[key]) {
-                  processedDecadeData[decade].pairs[key] = initMetricBucket(key);
+                  processedDecadeData[decade].pairs[key] =
+                    initMetricBucket(key);
                 }
                 const pairBucket = processedDecadeData[decade].pairs[key];
                 pairBucket.count += 1;
                 pairBucket.valence += +track.valence || 0;
                 pairBucket.loudness += normalizeLoudness(+track.loudness);
                 pairBucket.acousticness += +track.acousticness || 0;
+                pairBucket.danceability += +track.danceability || 0;
               }
             }
           }
@@ -1037,7 +1328,9 @@ export default function GenreChordDiagram() {
     }
 
     if (!hasData) return null;
-    return d3.chord().padAngle(0.05).sortSubgroups(d3.descending)(aggregatedMatrix);
+    return d3.chord().padAngle(0.05).sortSubgroups(d3.descending)(
+      aggregatedMatrix,
+    );
   }, [dataByYear, currentYear]);
 
   const pairStory = useMemo(
@@ -1047,14 +1340,15 @@ export default function GenreChordDiagram() {
             decadeData,
             selectedGenreA,
             selectedGenreB,
-            selectedPairStoryFrame,
+            selectedPair,
           )
         : [],
-    [decadeData, selectedGenreA, selectedGenreB, selectedPairStoryFrame],
+    [decadeData, selectedGenreA, selectedGenreB, selectedPair],
   );
 
   useEffect(() => {
     setActiveStoryIndex(0);
+    stepRefs.current = [];
   }, [selectedPairId]);
 
   useEffect(() => {
@@ -1080,10 +1374,16 @@ export default function GenreChordDiagram() {
   if (loading) {
     return (
       <section style={styles.section}>
-        <div className="container" style={{ textAlign: "center", padding: "100px 0" }}>
-          <h2 style={{ color: "var(--accent)" }}>Mapping genre relationships...</h2>
+        <div
+          className="container"
+          style={{ textAlign: "center", padding: "100px 0" }}
+        >
+          <h2 style={{ color: "var(--accent)" }}>
+            Mapping genre relationships...
+          </h2>
           <p style={{ color: "var(--muted)" }}>
-            Building crossover data across artists, decades, and emotional traits.
+            Building crossover data across artists, decades, and emotional
+            traits.
           </p>
         </div>
       </section>
@@ -1100,11 +1400,12 @@ export default function GenreChordDiagram() {
           <em>follow one genre relationship through time.</em>
         </h2>
         <p className="section-body" style={{ marginBottom: "28px" }}>
-          Instead of browsing every possible combination, this section focuses on a
-          handful of pairings where the crossover tells a sharper story. Pick one
-          of the featured relationships and scroll decade by decade to see how that
-          shared space moves toward the sadness paradox of lower valence, higher
-          loudness, and lower acousticness.
+          Instead of browsing every possible combination, this section focuses
+          on a handful of pairings where the crossover tells a sharper story.
+          Pick one of the featured relationships and scroll decade by decade to
+          see how that shared space moves toward the sadness paradox of lower
+          valence, higher loudness, lower acousticness, and often higher
+          danceability.
         </p>
 
         <div style={storyControlBar}>
@@ -1142,13 +1443,13 @@ export default function GenreChordDiagram() {
                     ...storyStep,
                     opacity: activeStoryIndex === index ? 1 : 0.28,
                     transform:
-                      activeStoryIndex === index ? "translateY(0)" : "translateY(14px)",
+                      activeStoryIndex === index
+                        ? "translateY(0)"
+                        : "translateY(14px)",
                     transition: "opacity 320ms ease, transform 320ms ease",
                   }}
                 >
-                  <div style={storyStepPill}>
-                    {step.decade}s
-                  </div>
+                  <div style={storyStepPill}>{step.decade}s</div>
                   <h3 style={storyStepTitle}>{step.title}</h3>
                   <p style={storyStepBody}>{step.body}</p>
                   <p style={storyStepParadox}>{step.paradox}</p>
@@ -1177,9 +1478,10 @@ export default function GenreChordDiagram() {
             <em>to the whole crossover map.</em>
           </h2>
           <p className="section-body" style={{ marginBottom: "40px" }}>
-            The focused scrollytelling view above shows one relationship in motion.
-            The original chord diagram below keeps the broader network intact so you
-            can see how genre boundaries dissolve across the full ecosystem.
+            The focused scrollytelling view above shows one relationship in
+            motion. The original chord diagram below keeps the broader network
+            intact so you can see how genre boundaries dissolve across the full
+            ecosystem.
           </p>
 
           <LegacyChordExplorer
@@ -1409,14 +1711,15 @@ const bridgeNode = {
 const bridgeLine = {
   height: "6px",
   borderRadius: "999px",
-  background: "linear-gradient(90deg, rgba(244,162,97,0.18), rgba(230,57,70,0.95), rgba(29,185,84,0.18))",
+  background:
+    "linear-gradient(90deg, rgba(244,162,97,0.18), rgba(230,57,70,0.95), rgba(29,185,84,0.18))",
   transformOrigin: "center",
   transition: "transform 320ms ease, opacity 320ms ease",
 };
 
 const metricGrid = {
   display: "grid",
-  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   gap: "10px",
 };
 
@@ -1570,3 +1873,4 @@ const styles = {
     fontSize: "0.95rem",
   },
 };
+

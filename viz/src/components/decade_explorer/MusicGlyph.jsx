@@ -34,7 +34,7 @@ export default function MusicGlyph({
   showLabels = false,
   opacity = 1,
 }) {
-  const staffTop = showLabels ? 16 : 14;
+  const staffTop = showLabels ? 18 : 16;
   const staffBottom = height - (showLabels ? 26 : 12);
   const staffHeight = staffBottom - staffTop;
   const numLines = 5;
@@ -50,8 +50,11 @@ export default function MusicGlyph({
   const ry = rx * 0.62; // notehead vertical radius
   const tilt = -14; // rotation degrees
 
-  const beamY = staffTop - 4;
-  const beamH = 5;
+  const topBarY = staffTop - 5;
+  const topBarH = 2;
+  const stemStartY = topBarY + topBarH;
+  const minStemLength = Math.max(9, staffHeight * 0.22);
+  const maxStemLength = Math.max(minStemLength + 1, staffHeight * 0.8);
 
   // Unique prefix per instance so gradients don't clash
   //   const uid = React.useId ? React.useId().replace(/:/g, "") : Math.random().toString(36).slice(2, 6);
@@ -60,20 +63,18 @@ export default function MusicGlyph({
 
   const uid = reactId ? reactId.replace(/:/g, "") : fallbackId.current;
 
-  // Pre-compute each note's cx, cy, and stem-x so beam aligns perfectly
+  // All stems share the same top origin; only stem length encodes the value.
   const noteData = ATTRS.map((attr, i) => {
     const val = Math.max(0, Math.min(1, attributes[attr.key] ?? 0.5));
     const cx = padL + (i + 0.5) * noteSpacing; // centred in each slot
-    const cy = staffBottom - val * staffHeight;
+    const stemLength =
+      minStemLength + val * (maxStemLength - minStemLength);
+    const cy = stemStartY + stemLength + ry * 0.2;
     // Stem attaches at the right edge of the tilted ellipse
     // For a -14° tilt the right-most point shifts slightly; approximate:
     const stemX = cx + rx * 0.88;
-    return { attr, cx, cy, stemX, val };
+    return { attr, cx, cy, stemX, stemLength, val };
   });
-
-  // Beam spans from first stem-x to last stem-x
-  const beamX1 = noteData[0].stemX - 1;
-  const beamX2 = noteData[noteData.length - 1].stemX + 1;
 
   // Staff lines span full usable width
   const staffLines = Array.from({ length: numLines }, (_, i) => {
@@ -91,7 +92,7 @@ export default function MusicGlyph({
     );
   });
 
-  const notes = noteData.map(({ attr, cx, cy, stemX }, i) => {
+  const notes = noteData.map(({ attr, cx, cy, stemX, stemLength }, i) => {
     const gradId = `ng-${uid}-${i}`;
     return (
       <g key={attr.key}>
@@ -136,12 +137,12 @@ export default function MusicGlyph({
           style={{ pointerEvents: "none" }}
         />
 
-        {/* Stem — right edge up to beam */}
+        {/* Stem length from the common top bar encodes the decade average. */}
         <line
           x1={stemX}
-          y1={cy - ry * 0.2}
+          y1={stemStartY}
           x2={stemX}
-          y2={beamY + beamH}
+          y2={stemStartY + stemLength}
           stroke={attr.color}
           strokeWidth={1.5}
           strokeLinecap="round"
@@ -174,13 +175,6 @@ export default function MusicGlyph({
       opacity={opacity}
       style={{ overflow: "visible" }}
     >
-      <defs>
-        <linearGradient id={`beam-${uid}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.72)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0.32)" />
-        </linearGradient>
-      </defs>
-
       {/* Subtle staff background */}
       <rect
         x={padL - 2}
@@ -193,23 +187,17 @@ export default function MusicGlyph({
 
       {staffLines}
 
-      {/* Beam — exactly aligned to stem positions */}
       <rect
-        x={beamX1}
-        y={beamY}
-        width={beamX2 - beamX1}
-        height={beamH}
-        fill={`url(#beam-${uid})`}
-        rx={1.5}
-      />
-      {/* Beam highlight stripe */}
-      <rect
-        x={beamX1 + 2}
-        y={beamY + 0.6}
-        width={beamX2 - beamX1 - 4}
-        height={1}
-        fill="rgba(255,255,255,0.38)"
-        rx={0.5}
+        x={noteData[0].stemX - noteSpacing * 0.42}
+        y={topBarY}
+        width={
+          noteData[noteData.length - 1].stemX -
+          noteData[0].stemX +
+          noteSpacing * 0.84
+        }
+        height={topBarH}
+        fill="rgba(255,255,255,0.78)"
+        rx={1}
       />
 
       {notes}

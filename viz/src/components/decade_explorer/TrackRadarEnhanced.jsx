@@ -30,8 +30,9 @@ function buildPolygon(cx, cy, maxR, values) {
 
 function getAxisValue(item, key) {
   if (key === "loudness_norm") {
+    if (item?.loudness_norm != null) return item.loudness_norm;
     if (item?.loudness != null) return normalizeLoudness(item.loudness);
-    return item?.loudness_norm ?? 0;
+    return 0;
   }
   return item?.[key] ?? 0;
 }
