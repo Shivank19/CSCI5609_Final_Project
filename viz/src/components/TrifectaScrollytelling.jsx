@@ -1261,7 +1261,7 @@ const inflectionWrap = {
 };
 
 const inflectionInner = {
-  maxWidth: "1100px",
+  maxWidth: "1200px",
   margin: "0 auto",
   padding: "0 32px",
   display: "grid",
