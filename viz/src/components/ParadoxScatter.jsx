@@ -19,7 +19,7 @@ const CHAPTERS = [
     headline: 'Music Got Sadder, But We Kept Dancing...',
     body: 'From the 1960s onward, the emotional positivity (valence) of popular music fell steadily—decade after decade, songs grew darker in mood. Yet, in a fascinating paradox, as the music became more melancholic, its overall danceability actually increased.',
     paradoxCaption: 'sadder AND more danceable',
-    highlightDecades: [1960, 2010],
+    highlightDecades: [1970, 2010],
     accent: '#FB7185',
   },
   {
@@ -30,7 +30,7 @@ const CHAPTERS = [
     headline: '...And We Turned the Volume Up',
     body: "The paradox doesn't stop at the rhythm. As the emotional valence dropped, the sheer volume of the music surged. We traded acoustic warmth for amplified, driving intensity—proving that modern melancholy wears a much louder coat.",
     paradoxCaption: 'sadder AND louder',
-    highlightDecades: [1960, 2010],
+    highlightDecades: [1970, 2010],
     accent: '#FBBF24',
   },
   {
@@ -40,8 +40,8 @@ const CHAPTERS = [
     yLabel: 'VALENCE / HAPPINESS →',
     headline: 'Two Declines, One Story',
     body: 'Acousticness and valence fell together. As electric production replaced organic instruments, the warmth in both sound and sentiment drained in step — a possible causal link.',
-    paradoxCaption: 'both declined in lockstep',
-    highlightDecades: [1960, 2010],
+    paradoxCaption: 'sadder AND less acoustic',
+    highlightDecades: [1970, 2010],
     accent: '#60A5FA',
   },
   {
@@ -52,7 +52,7 @@ const CHAPTERS = [
     headline: 'So What Does It Mean?',
     body: "We traded warmth for drive. Sadness stopped being something to sit with — it became the engine of modern music. The paradox isn't a contradiction: it's an adaptation. When the world got louder and more electric, we learned to dance through the dark.",
     paradoxCaption: 'sadder AND more compelling',
-    highlightDecades: [1960, 2010],
+    highlightDecades: [1970, 2010],
     accent: '#A78BFA',
     isSoWhat: true,
     hideChart: true,
