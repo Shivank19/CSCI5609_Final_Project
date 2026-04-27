@@ -24,11 +24,11 @@ const QUESTIONS = [
   {
     id: "mood",
     feature: "valence",
-    question: "When you pick a playlist, what's the vibe?",
+    question: "What mood do you prefer for your playlists?",
     options: [
       { label: "Melancholic and introspective", value: 0.25 },
       { label: "Mellow and reflective", value: 0.4 },
-      { label: "Balanced, depends on my mood", value: 0.55 },
+      { label: "Balanced/depends on my mood", value: 0.55 },
       { label: "Upbeat and feel-good", value: 0.7 },
       { label: "Euphoric and joyful", value: 0.85 },
     ],
@@ -36,7 +36,7 @@ const QUESTIONS = [
   {
     id: "volume",
     feature: "loudness",
-    question: "How do you like your music to sound?",
+    question: "How loud do you like your music?",
     options: [
       { label: "Quiet, intimate, room-filling", value: 0.2 },
       { label: "Moderate, easy on the ears", value: 0.35 },
@@ -48,7 +48,7 @@ const QUESTIONS = [
   {
     id: "movement",
     feature: "danceability",
-    question: "Are you dancing or chilling?",
+    question: "How much do you move when you listen to music?",
     options: [
       { label: "Sitting still, eyes closed", value: 0.2 },
       { label: "Head nodding at most", value: 0.35 },
@@ -60,7 +60,7 @@ const QUESTIONS = [
   {
     id: "instrumentation",
     feature: "acousticness",
-    question: "What sounds more appealing?",
+    question: "What type of sound do you prefer?",
     options: [
       { label: "Synths, beats, electronic production", value: 0.15 },
       { label: "A mix of electronic and organic", value: 0.35 },
@@ -98,27 +98,27 @@ const QUESTIONS = [
 const DECADE_DESCRIPTIONS = {
   1960: {
     tagline: "The Golden Age of Melody",
-    body: "Your taste aligns with the 1960s — an era of soaring melodies, live instrumentation, and emotional sincerity. The music of this decade was built on real instruments playing in real rooms. Valence sat high, acousticness was the default, and songs carried a warmth that digital production still tries to replicate.",
+    body: "Your taste aligns with the 1960s: live instrumentation, and emotional sincerity. The music of this decade was built on real instruments playing in real rooms. Valence sat high, acousticness was the default, and songs carried warm acoustic production.",
   },
   1970: {
     tagline: "Peak Warmth, Peak Groove",
-    body: "Your sound is the 1970s — the decade where popular music hit its highest emotional peak. Soul, disco, funk, and singer-songwriter traditions dominated. The data shows this era had the highest average valence of any decade. Songs were danceable, loud enough to feel alive, and still deeply rooted in organic instrumentation.",
+    body: "Your sound is the 1970s: the decade where popular music hit an emotional peak. Soul, disco, funk, and singer-songwriter traditions dominated. The data shows this era had the highest average valence of any decade. Songs were danceable, loud, and still deeply rooted in organic instrumentation.",
   },
   1980: {
     tagline: "The Electronic Turning Point",
-    body: "You belong in the 1980s — the decade where synthesizers went mainstream and the sound of popular music changed forever. Energy was high, danceability peaked, and electronic production started replacing acoustic instruments. This was the bridge between the organic past and the digital future.",
+    body: "You belong in the 1980s: the decade where synthesizers went mainstream and the sound of popular music changed forever. Energy was high, danceability peaked, and electronic production started replacing acoustic instruments. ",
   },
   1990: {
     tagline: "The Great Rewiring",
-    body: "Your taste matches the 1990s — the most disruptive decade in our dataset. Valence dropped sharply as alternative rock and grunge moved from the margins to the center. Loudness surged as digital production tools allowed engineers to push tracks harder. Acousticness began its steep decline. This is the decade where the blueprint of modern music was written.",
+    body: "Your taste matches the 1990s: the most disruptive decade in the dataset. Valence dropped sharply as alternative rock and grunge moved from the margins to the center. Loudness surged as digital production tools allowed engineers to push tracks harder. Acousticness began its steep decline. ",
   },
   2000: {
     tagline: "Loudness at Its Peak",
-    body: "Your sound is the 2000s — the era of maximum volume. The loudness war reached its climax as tracks were mastered hotter than ever before. Hip-hop, pop-punk, and R&B dominated. Danceability stayed strong, but the emotional warmth of earlier decades continued to fade. This was the last decade before streaming changed the rules.",
+    body: "Your sound is the 2000s: the era of maximum volume. The loudness war reached its climax as tracks were mastered hotter than ever before. Hip-hop, pop-punk, and R&B dominated. Danceability stayed strong, but the emotional warmth of the acousticness of earlier decades began to fade. ",
   },
   2010: {
     tagline: "The Streaming Era Sound",
-    body: "Your taste aligns with the 2010s — the streaming era. Songs became less acoustic, less emotionally bright, and more compressed than ever before. But they also became more diverse in style. Hip-hop and electronic production became the new default. Loudness plateaued as streaming normalization changed the incentive, but the dense, synthetic sound stayed.",
+    body: "Your taste aligns with the 2010s: the streaming era. Songs became less acoustic, less emotionally bright, and more compressed. But they also became more diverse in style. Hip-hop and electronic production became the new default. Loudness plateaued as streaming normalization changed the incentive, but the dense, synthetic sound stayed.",
   },
 };
 
@@ -223,7 +223,6 @@ export default function MusicTasteQuiz({ data }) {
     const decadeInfo = DECADE_DESCRIPTIONS[winningDecade];
     const decadeData = decadeAverages[winningDecade];
     const decadeObj = DECADES.find((d) => d.decade === winningDecade);
-    const maxScore = Math.max(...Object.values(scores));
 
     return (
       <section style={sectionStyle}>
@@ -272,31 +271,6 @@ export default function MusicTasteQuiz({ data }) {
                       />
                     </div>
                     <span style={statBarLabel}>Your pick: {Math.round(userVal * 100)}%</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div style={allScoresWrap}>
-            <p style={allScoresTitle}>How all decades scored</p>
-            {DECADES.map((dec) => {
-              const score = scores[dec.decade] ?? 0;
-              const isWinner = dec.decade === winningDecade;
-              const barWidth = maxScore > 0 ? (score / maxScore) * 100 : 0;
-              return (
-                <div key={dec.decade} style={scoreRow}>
-                  <span style={{ ...scoreLabel, color: isWinner ? dec.color : "rgba(232,232,240,0.5)", fontWeight: isWinner ? 700 : 400 }}>
-                    {dec.label}
-                  </span>
-                  <div style={scoreBarBg}>
-                    <div
-                      style={{
-                        ...scoreBarFill,
-                        width: `${barWidth}%`,
-                        background: isWinner ? dec.color : `${dec.color}55`,
-                      }}
-                    />
                   </div>
                 </div>
               );
@@ -444,47 +418,6 @@ const statBarLabel = {
   color: "rgba(232,232,240,0.4)",
 };
 
-const allScoresWrap = {
-  background: "rgba(255,255,255,0.03)",
-  border: "1px solid rgba(255,255,255,0.07)",
-  borderRadius: "14px",
-  padding: "24px",
-  marginBottom: "28px",
-};
-
-const allScoresTitle = {
-  fontSize: "13px",
-  fontWeight: 700,
-  color: "rgba(232,232,240,0.6)",
-  marginBottom: "16px",
-};
-
-const scoreRow = {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  marginBottom: "10px",
-};
-
-const scoreLabel = {
-  fontSize: "12px",
-  width: "52px",
-  flexShrink: 0,
-};
-
-const scoreBarBg = {
-  flex: 1,
-  height: 8,
-  background: "rgba(255,255,255,0.06)",
-  borderRadius: 4,
-  overflow: "hidden",
-};
-
-const scoreBarFill = {
-  height: "100%",
-  borderRadius: 4,
-  transition: "width 400ms ease",
-};
 
 const resetButton = {
   padding: "12px 28px",
