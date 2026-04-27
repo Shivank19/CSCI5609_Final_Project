@@ -1485,10 +1485,10 @@ export default function GenreChordDiagram() {
             <em>to the whole crossover map.</em>
           </h2>
           <p className="section-body" style={{ marginBottom: "40px" }}>
-            The focused scrollytelling view above shows one relationship in
-            motion. The original chord diagram below keeps the broader network
-            intact so you can see how genre boundaries dissolve across the full
-            ecosystem.
+            The focused view above shows just a few relationships in motion. The
+            entire chord diagram below keeps the broader network intact so you
+            can see how genre boundaries dissolve across the full ecosystem and
+            relate this blending to the paradox.
           </p>
 
           <LegacyChordExplorer
