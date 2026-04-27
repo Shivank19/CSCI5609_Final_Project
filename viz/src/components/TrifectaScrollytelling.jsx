@@ -12,23 +12,22 @@ const FIELDS = [
       {
         tag: "THE BASELINE",
         title: "Popular music once leaned openly joyful.",
-        body:
-          "In the early decades of the dataset, the average song sounded far more buoyant than it does now. This is the world of swing, soul, disco, and songs built to lift a room. By the 1970s, valence reaches its high point. Mainstream music was not just catchy. It was emotionally bright.",
+        body: "In the early decades of the dataset, the average song sounded far more buoyant than it does now. This is the world of swing, soul, disco, and songs built to lift a room. By the 1970s, valence reaches its high point. Mainstream music was not just catchy. It was emotionally bright.",
         bridge: "But warmth in mood is only one part of the story.",
       },
       {
         tag: "THE TURN",
         title: "The 1990s made melancholy feel mainstream.",
-        body:
-          "The shift is not subtle. Alternative rock, grunge, and darker pop aesthetics stop living at the edges and move into the center of culture. The average emotional tone bends downward, and it keeps bending. What had once felt like a countercurrent starts rewriting the default mood of popular music.",
-        bridge: "And the emotional drop is not the only thing that spikes here.",
+        body: "The shift is not subtle. Alternative rock, grunge, and darker pop aesthetics stop living at the edges and move into the center of culture. The average emotional tone bends downward, and it keeps bending. What had once felt like a countercurrent starts rewriting the default mood of popular music.",
+        bridge:
+          "And the emotional drop is not the only thing that spikes here.",
       },
       {
         tag: "THE DECLINE",
         title: "By the 2010s, the emotional floor has moved.",
-        body:
-          "Valence keeps sliding into the streaming era. The songs are still sticky, polished, and huge. They just carry less of the easy optimism that dominated earlier decades. The change matters because it reframes what a hit song is allowed to feel like.",
-        bridge: "If songs felt less sunny, they also started hitting much harder.",
+        body: "Valence keeps sliding into the streaming era. The songs are still sticky, polished, and huge. They just carry less of the easy optimism that dominated earlier decades. The change matters because it reframes what a hit song is allowed to feel like.",
+        bridge:
+          "If songs felt less sunny, they also started hitting much harder.",
       },
     ],
   },
@@ -41,22 +40,20 @@ const FIELDS = [
       {
         tag: "THE BUILDUP",
         title: "For decades, louder felt like better.",
-        body:
-          "Human ears are easy to fool. A track mastered a little hotter can feel more exciting in a quick comparison, especially on radio. Once labels realized that, loudness stopped being a technical setting and became a competitive strategy.",
+        body: "Human ears are easy to fool. A track mastered a little hotter can feel more exciting in a quick comparison, especially on radio. Once labels realized that, loudness stopped being a technical setting and became a competitive strategy.",
         bridge: "Then software removed most of the old limits.",
       },
       {
         tag: "THE 1990S INFLECTION",
         title: "The 1990s break looks almost violent in the data.",
-        body:
-          "Digital production tools let engineers crush dynamic range and push songs toward the ceiling. The jump from the 1990s into the 2000s is the steepest rise anywhere in this series. It is the kind of change you can see at a glance, which is exactly why this decade needs to feel like the shock moment.",
-        bridge: "And something even stranger is happening underneath that volume.",
+        body: "Digital production tools let engineers crush dynamic range and push songs toward the ceiling. The jump from the 1990s into the 2000s is the steepest rise anywhere in this series. It is the kind of change you can see at a glance, which is exactly why this decade needs to feel like the shock moment.",
+        bridge:
+          "And something even stranger is happening underneath that volume.",
       },
       {
         tag: "THE AFTERMATH",
         title: "Streaming changed the incentive, not the habit.",
-        body:
-          "Normalization on platforms like Spotify reduced the payoff for over-mastering, so the curve stops sprinting upward. But the sound of compression stays with us. Once audiences get used to that density, it becomes part of the texture of modern pop itself.",
+        body: "Normalization on platforms like Spotify reduced the payoff for over-mastering, so the curve stops sprinting upward. But the sound of compression stays with us. Once audiences get used to that density, it becomes part of the texture of modern pop itself.",
         bridge: "Volume rises. Something organic disappears at the same time.",
       },
     ],
@@ -70,23 +67,22 @@ const FIELDS = [
       {
         tag: "THE ORGANIC ERA",
         title: "Recorded music used to sound much more physical.",
-        body:
-          "Earlier recordings carry more room tone, more live instruments, and more evidence of people actually playing together. High acousticness does not mean old-fashioned or simple. It means the sound is grounded in real instruments, real spaces, and less synthetic construction.",
-        bridge: "That physical texture starts thinning out faster than you might expect.",
+        body: "Earlier recordings carry more room tone, more live instruments, and more evidence of people actually playing together. High acousticness does not mean old-fashioned or simple. It means the sound is grounded in real instruments, real spaces, and less synthetic construction.",
+        bridge:
+          "That physical texture starts thinning out faster than you might expect.",
       },
       {
         tag: "THE COLLAPSE",
         title: "Once electronic production scales, acousticness caves in.",
-        body:
-          "Synths, drum machines, sampling, and tighter digital workflows do not just add new colors. They replace older ones. The decline is steep enough that the 1980s and 1990s feel like a structural break, not a gentle stylistic drift.",
+        body: "Synths, drum machines, sampling, and tighter digital workflows do not just add new colors. They replace older ones. The decline is steep enough that the 1980s and 1990s feel like a structural break, not a gentle stylistic drift.",
         bridge: "By now, the pattern is too aligned to ignore.",
       },
       {
         tag: "THE NEW DEFAULT",
         title: "The synthetic soundscape becomes normal.",
-        body:
-          "By the 2020s, the average song contains far less of the acoustic signature that once anchored popular music. This is not a value judgment. It is a measurable change in the building materials of a hit record, and it completes the three-part turn you are seeing here.",
-        bridge: "Put the three together and the century suddenly snaps into focus.",
+        body: "By the 2020s, the average song contains far less of the acoustic signature that once anchored popular music. This is not a value judgment. It is a measurable change in the building materials of a hit record, and it completes the three-part turn you are seeing here.",
+        bridge:
+          "Put the three together and the century suddenly snaps into focus.",
       },
     ],
   },
@@ -178,7 +174,10 @@ function buildYearData(data, popularityThreshold) {
   if (!data?.length) return [];
   const byYear = d3.rollup(
     data.filter(
-      (d) => d.year >= 1960 && Number.isFinite(d.popularity) && d.popularity >= popularityThreshold,
+      (d) =>
+        d.year >= 1960 &&
+        Number.isFinite(d.popularity) &&
+        d.popularity >= popularityThreshold,
     ),
     (rows) => ({
       year: rows[0].year,
@@ -201,10 +200,7 @@ function TrifectaChart({
   brushRange,
 }) {
   const wrapperRef = useRef(null);
-  const { width, height } = useElementSize(
-    wrapperRef,
-    fullReveal ? 420 : 360,
-  );
+  const { width, height } = useElementSize(wrapperRef, fullReveal ? 420 : 360);
   const [hoveredYear, setHoveredYear] = useState(null);
   const [hoveredField, setHoveredField] = useState(null);
 
@@ -216,16 +212,13 @@ function TrifectaChart({
   const innerWidth = Math.max(240, width - margin.left - margin.right);
   const innerHeight = Math.max(220, height - margin.top - margin.bottom);
 
-  const xScale = useMemo(
-    () => {
-      const scale = d3.scaleLinear().domain([1960, 2020]).range([0, innerWidth]);
-      if (brushRange) {
-        scale.domain([brushRange[0], brushRange[1]]);
-      }
-      return scale;
-    },
-    [innerWidth, brushRange],
-  );
+  const xScale = useMemo(() => {
+    const scale = d3.scaleLinear().domain([1960, 2020]).range([0, innerWidth]);
+    if (brushRange) {
+      scale.domain([brushRange[0], brushRange[1]]);
+    }
+    return scale;
+  }, [innerWidth, brushRange]);
   const yScale = useMemo(
     () => d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]),
     [innerHeight],
@@ -253,7 +246,8 @@ function TrifectaChart({
           const closest =
             series.reduce((best, row) => {
               if (!best) return row;
-              return Math.abs(row.year - hoverYear) < Math.abs(best.year - hoverYear)
+              return Math.abs(row.year - hoverYear) <
+                Math.abs(best.year - hoverYear)
                 ? row
                 : best;
             }, null) || series[series.length - 1];
@@ -292,7 +286,12 @@ function TrifectaChart({
         width={width}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
-        style={{ display: "block", width: "100%", height: "100%", overflow: "visible" }}
+        style={{
+          display: "block",
+          width: "100%",
+          height: "100%",
+          overflow: "visible",
+        }}
         onMouseMove={handlePointerMove}
         onMouseLeave={() => {
           setHoveredYear(null);
@@ -388,15 +387,18 @@ function TrifectaChart({
             const progress = progressByField[field.key] ?? 0;
             if (progress <= 0.001) return null;
 
-            const series = buildVisibleSeries(yearData, progress).map((row) => ({
-              year: row.year,
-              value: row[field.key],
-            }));
+            const series = buildVisibleSeries(yearData, progress).map(
+              (row) => ({
+                year: row.year,
+                value: row[field.key],
+              }),
+            );
             if (series.length < 2) return null;
 
             const path = lineGenerator(series);
             const finalPoint = series[series.length - 1];
-            const isActive = activeField === field.key || (!activeField && fullReveal);
+            const isActive =
+              activeField === field.key || (!activeField && fullReveal);
             const isHovered = interactiveHover && hoveredField === field.key;
 
             return (
@@ -409,7 +411,9 @@ function TrifectaChart({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   opacity={isActive || isHovered ? 1 : 0.18}
-                  style={{ transition: "opacity 220ms ease, stroke-width 220ms ease" }}
+                  style={{
+                    transition: "opacity 220ms ease, stroke-width 220ms ease",
+                  }}
                 />
                 <path
                   d={path}
@@ -510,7 +514,11 @@ function TrifectaChart({
                     background: point.field.color,
                   }}
                 />
-                <span style={{ color: emphasized ? "#f7f7fb" : "rgba(247,247,251,0.74)" }}>
+                <span
+                  style={{
+                    color: emphasized ? "#f7f7fb" : "rgba(247,247,251,0.74)",
+                  }}
+                >
                   {point.field.label}
                 </span>
                 <span style={{ marginLeft: "auto", color: point.field.color }}>
@@ -532,7 +540,12 @@ function TrifectaChart({
   );
 }
 
-function RevealChart({ yearData, popularityThreshold, brushRange, setBrushRange }) {
+function RevealChart({
+  yearData,
+  popularityThreshold,
+  brushRange,
+  setBrushRange,
+}) {
   const svgRef = useRef(null);
   const brushRef = useRef(null);
 
@@ -540,15 +553,18 @@ function RevealChart({ yearData, popularityThreshold, brushRange, setBrushRange 
     if (!svgRef.current || !yearData.length) return;
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove();
+    svg.selectAll("*").remove();
 
     const margin = { top: 28, right: 88, bottom: 40, left: 52 };
     const width = svgRef.current.clientWidth - margin.left - margin.right;
     const height = 370 - margin.top - margin.bottom;
 
-    const chart = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+    const chart = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const xMain = d3.scaleLinear()
+    const xMain = d3
+      .scaleLinear()
       .domain(d3.extent(yearData, (d) => d.year))
       .range([0, width]);
 
@@ -558,114 +574,153 @@ function RevealChart({ yearData, popularityThreshold, brushRange, setBrushRange 
 
     const y = d3.scaleLinear().domain([0, 1]).range([height, 0]);
 
-    const xAxis = d3.axisBottom(xMain).tickFormat(d3.format('d')).ticks(width / 80);
-    const yAxis = d3.axisLeft(y).ticks(5).tickFormat((d) => `${Math.round(d * 100)}%`);
+    const xAxis = d3
+      .axisBottom(xMain)
+      .tickFormat(d3.format("d"))
+      .ticks(width / 80);
+    const yAxis = d3
+      .axisLeft(y)
+      .ticks(5)
+      .tickFormat((d) => `${Math.round(d * 100)}%`);
 
-    chart.append('g')
-      .attr('transform', `translate(0,${height})`)
+    chart
+      .append("g")
+      .attr("transform", `translate(0,${height})`)
       .call(xAxis)
-      .call((g) => g.select('.domain').attr('stroke', 'rgba(255,255,255,0.12)'))
-      .call((g) => g.selectAll('line').attr('stroke', 'rgba(255,255,255,0.12)'))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(232,232,240,0.42)').attr('font-size', '10'));
+      .call((g) => g.select(".domain").attr("stroke", "rgba(255,255,255,0.12)"))
+      .call((g) => g.selectAll("line").attr("stroke", "rgba(255,255,255,0.12)"))
+      .call((g) =>
+        g
+          .selectAll("text")
+          .attr("fill", "rgba(232,232,240,0.42)")
+          .attr("font-size", "10"),
+      );
 
-    chart.append('g')
+    chart
+      .append("g")
       .call(yAxis)
-      .call((g) => g.select('.domain').remove())
-      .call((g) => g.selectAll('line').attr('stroke', 'rgba(255,255,255,0.06)').attr('stroke-dasharray', '4,6'))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(232,232,240,0.42)').attr('font-size', '10'));
+      .call((g) => g.select(".domain").remove())
+      .call((g) =>
+        g
+          .selectAll("line")
+          .attr("stroke", "rgba(255,255,255,0.06)")
+          .attr("stroke-dasharray", "4,6"),
+      )
+      .call((g) =>
+        g
+          .selectAll("text")
+          .attr("fill", "rgba(232,232,240,0.42)")
+          .attr("font-size", "10"),
+      );
 
     // 1990s inflection zone
     const x1990 = xMain(1990);
     const x2000 = xMain(2000);
     if (x1990 < width && x2000 > 0) {
-      chart.append('rect')
-        .attr('x', Math.max(0, x1990))
-        .attr('y', 0)
-        .attr('width', Math.min(width, x2000) - Math.max(0, x1990))
-        .attr('height', height)
-        .attr('fill', 'rgba(255,90,60,0.07)')
-        .attr('stroke', 'rgba(255,110,70,0.3)')
-        .attr('stroke-width', 1)
-        .attr('rx', 6);
+      chart
+        .append("rect")
+        .attr("x", Math.max(0, x1990))
+        .attr("y", 0)
+        .attr("width", Math.min(width, x2000) - Math.max(0, x1990))
+        .attr("height", height)
+        .attr("fill", "rgba(255,90,60,0.07)")
+        .attr("stroke", "rgba(255,110,70,0.3)")
+        .attr("stroke-width", 1)
+        .attr("rx", 6);
     }
 
     // Clip path
-    chart.append('defs').append('clipPath')
-      .attr('id', 'trifecta-clip')
-      .append('rect')
-      .attr('width', width)
-      .attr('height', height);
+    chart
+      .append("defs")
+      .append("clipPath")
+      .attr("id", "trifecta-clip")
+      .append("rect")
+      .attr("width", width)
+      .attr("height", height);
 
-    const lineGroup = chart.append('g').attr('clip-path', 'url(#trifecta-clip)');
+    const lineGroup = chart
+      .append("g")
+      .attr("clip-path", "url(#trifecta-clip)");
 
     FIELDS.forEach((field) => {
-      const line = d3.line()
+      const line = d3
+        .line()
         .x((d) => xMain(d.year))
         .y((d) => y(d[field.key]))
         .curve(d3.curveMonotoneX)
         .defined((d) => Number.isFinite(d[field.key]));
 
-      lineGroup.append('path')
+      lineGroup
+        .append("path")
         .datum(yearData)
-        .attr('class', `trifecta-line-${field.key}`)
-        .attr('fill', 'none')
-        .attr('stroke', field.color)
-        .attr('stroke-width', 2.5)
-        .attr('d', line);
+        .attr("class", `trifecta-line-${field.key}`)
+        .attr("fill", "none")
+        .attr("stroke", field.color)
+        .attr("stroke-width", 2.5)
+        .attr("d", line);
 
       // End label
-      const lastVisible = yearData.filter((d) => xMain(d.year) <= width && xMain(d.year) >= 0).pop();
+      const lastVisible = yearData
+        .filter((d) => xMain(d.year) <= width && xMain(d.year) >= 0)
+        .pop();
       if (lastVisible) {
-        lineGroup.append('text')
-          .attr('x', xMain(lastVisible.year) + 8)
-          .attr('y', y(lastVisible[field.key]))
-          .attr('fill', field.color)
-          .attr('font-size', '11')
-          .attr('font-weight', '600')
-          .attr('dominant-baseline', 'middle')
+        lineGroup
+          .append("text")
+          .attr("x", xMain(lastVisible.year) + 8)
+          .attr("y", y(lastVisible[field.key]))
+          .attr("fill", field.color)
+          .attr("font-size", "11")
+          .attr("font-weight", "600")
+          .attr("dominant-baseline", "middle")
           .text(field.label);
       }
     });
 
     // Tooltip crosshair
     const bisect = d3.bisector((d) => d.year).left;
-    const focus = chart.append('g').style('display', 'none');
-    focus.append('line')
-      .attr('y1', 0).attr('y2', height)
-      .attr('stroke', 'rgba(255,255,255,0.2)')
-      .attr('stroke-width', 1)
-      .attr('stroke-dasharray', '4,4');
+    const focus = chart.append("g").style("display", "none");
+    focus
+      .append("line")
+      .attr("y1", 0)
+      .attr("y2", height)
+      .attr("stroke", "rgba(255,255,255,0.2)")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4");
     FIELDS.forEach((field) => {
-      focus.append('circle')
-        .attr('class', `dot-${field.key}`)
-        .attr('r', 5)
-        .attr('fill', field.color)
-        .attr('stroke', 'rgba(10,10,16,0.8)')
-        .attr('stroke-width', 2);
+      focus
+        .append("circle")
+        .attr("class", `dot-${field.key}`)
+        .attr("r", 5)
+        .attr("fill", field.color)
+        .attr("stroke", "rgba(10,10,16,0.8)")
+        .attr("stroke-width", 2);
     });
 
-    const tooltip = d3.select('body').selectAll('.trifecta-reveal-tip')
-      .data([null]).join('div')
-      .attr('class', 'trifecta-reveal-tip')
-      .style('position', 'fixed')
-      .style('pointer-events', 'none')
-      .style('opacity', 0)
-      .style('min-width', '160px')
-      .style('padding', '10px 12px')
-      .style('border-radius', '10px')
-      .style('border', '1px solid rgba(255,255,255,0.08)')
-      .style('background', 'rgba(12,12,18,0.92)')
-      .style('backdrop-filter', 'blur(12px)')
-      .style('font-size', '12px')
-      .style('color', '#e8e8f0')
-      .style('z-index', 9999);
+    const tooltip = d3
+      .select("body")
+      .selectAll(".trifecta-reveal-tip")
+      .data([null])
+      .join("div")
+      .attr("class", "trifecta-reveal-tip")
+      .style("position", "fixed")
+      .style("pointer-events", "none")
+      .style("opacity", 0)
+      .style("min-width", "160px")
+      .style("padding", "10px 12px")
+      .style("border-radius", "10px")
+      .style("border", "1px solid rgba(255,255,255,0.08)")
+      .style("background", "rgba(12,12,18,0.92)")
+      .style("backdrop-filter", "blur(12px)")
+      .style("font-size", "12px")
+      .style("color", "#e8e8f0")
+      .style("z-index", 9999);
 
-    svg.on('mousemove', (event) => {
+    svg.on("mousemove", (event) => {
       const [mx] = d3.pointer(event);
       const mouseX = mx - margin.left;
       if (mouseX < 0 || mouseX > width) {
-        focus.style('display', 'none');
-        tooltip.style('opacity', 0);
+        focus.style("display", "none");
+        tooltip.style("opacity", 0);
         return;
       }
       const x0 = xMain.invert(mouseX);
@@ -673,70 +728,86 @@ function RevealChart({ yearData, popularityThreshold, brushRange, setBrushRange 
       const d0 = yearData[i - 1];
       const d1 = yearData[i];
       if (!d0) return;
-      const d = d1 && (x0 - d0.year > d1.year - x0) ? d1 : d0;
+      const d = d1 && x0 - d0.year > d1.year - x0 ? d1 : d0;
 
-      focus.style('display', null).attr('transform', `translate(${xMain(d.year)},0)`);
+      focus
+        .style("display", null)
+        .attr("transform", `translate(${xMain(d.year)},0)`);
       FIELDS.forEach((field) => {
-        focus.select(`.dot-${field.key}`).attr('cy', y(d[field.key]));
+        focus.select(`.dot-${field.key}`).attr("cy", y(d[field.key]));
       });
 
       const ttLeft = event.clientX + 16;
       const ttTop = event.clientY - 60;
-      tooltip.style('opacity', 1)
-        .style('left', `${ttLeft}px`)
-        .style('top', `${ttTop}px`)
-        .html(`<div style="font-weight:700;margin-bottom:6px;color:rgba(232,232,240,0.5);font-size:10px;letter-spacing:0.1em">${d.year}</div>` +
-          FIELDS.map((f) => {
-            const val = d[f.key];
-            const display = f.key === 'loudness_norm'
-              ? `${(val * 20 - 20).toFixed(1)} dB`
-              : `${Math.round(val * 100)}%`;
-            return `<div style="display:flex;justify-content:space-between;gap:24px;margin-bottom:3px">
+      tooltip
+        .style("opacity", 1)
+        .style("left", `${ttLeft}px`)
+        .style("top", `${ttTop}px`)
+        .html(
+          `<div style="font-weight:700;margin-bottom:6px;color:rgba(232,232,240,0.5);font-size:10px;letter-spacing:0.1em">${d.year}</div>` +
+            FIELDS.map((f) => {
+              const val = d[f.key];
+              const display =
+                f.key === "loudness_norm"
+                  ? `${(val * 20 - 20).toFixed(1)} dB`
+                  : `${Math.round(val * 100)}%`;
+              return `<div style="display:flex;justify-content:space-between;gap:24px;margin-bottom:3px">
               <span style="color:rgba(232,232,240,0.6)">${f.label}</span>
               <span style="color:${f.color};font-weight:600">${display}</span>
             </div>`;
-          }).join(''));
+            }).join(""),
+        );
     });
 
-    svg.on('mouseleave', () => {
-      focus.style('display', 'none');
-      tooltip.style('opacity', 0);
+    svg.on("mouseleave", () => {
+      focus.style("display", "none");
+      tooltip.style("opacity", 0);
     });
 
     // Brush mini-chart
     if (brushRef.current) {
       const bMargin = { top: 10, right: 88, bottom: 20, left: 52 };
-      const bWidth = brushRef.current.clientWidth - bMargin.left - bMargin.right;
+      const bWidth =
+        brushRef.current.clientWidth - bMargin.left - bMargin.right;
       const bHeight = 60 - bMargin.top - bMargin.bottom;
 
       const bSvg = d3.select(brushRef.current);
-      bSvg.selectAll('*').remove();
+      bSvg.selectAll("*").remove();
 
-      const bChart = bSvg.append('g').attr('transform', `translate(${bMargin.left},${bMargin.top})`);
+      const bChart = bSvg
+        .append("g")
+        .attr("transform", `translate(${bMargin.left},${bMargin.top})`);
 
-      const xBrush = d3.scaleLinear()
+      const xBrush = d3
+        .scaleLinear()
         .domain(d3.extent(yearData, (d) => d.year))
         .range([0, bWidth]);
 
       const yBrush = d3.scaleLinear().domain([0, 1]).range([bHeight, 0]);
 
       FIELDS.forEach((field) => {
-        const bLine = d3.line()
+        const bLine = d3
+          .line()
           .x((d) => xBrush(d.year))
           .y((d) => yBrush(d[field.key]))
           .curve(d3.curveMonotoneX);
-        bChart.append('path')
+        bChart
+          .append("path")
           .datum(yearData)
-          .attr('fill', 'none')
-          .attr('stroke', field.color)
-          .attr('stroke-width', 1)
-          .attr('opacity', 0.4)
-          .attr('d', bLine);
+          .attr("fill", "none")
+          .attr("stroke", field.color)
+          .attr("stroke-width", 1)
+          .attr("opacity", 0.4)
+          .attr("d", bLine);
       });
 
-      const brush = d3.brushX()
-        .extent([[0, 0], [bWidth, bHeight]])
-        .on('brush end', (event) => {
+      const brush = d3
+        .brushX()
+        .extent([
+          [0, 0],
+          [bWidth, bHeight],
+        ])
+        .on("brush end", (event) => {
           if (event.selection) {
             setBrushRange(event.selection.map(xBrush.invert));
           } else {
@@ -744,25 +815,39 @@ function RevealChart({ yearData, popularityThreshold, brushRange, setBrushRange 
           }
         });
 
-      bChart.append('g').attr('class', 'brush').call(brush);
+      bChart.append("g").attr("class", "brush").call(brush);
 
       if (brushRange) {
-        bChart.select('.brush').call(brush.move, brushRange.map(xBrush));
+        bChart.select(".brush").call(brush.move, brushRange.map(xBrush));
       }
     }
   }, [yearData, brushRange, setBrushRange]);
 
   return (
     <div style={revealChartCard}>
-      <svg ref={svgRef} width="100%" height={370} style={{ display: 'block' }} />
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '10px' }}>
+      <svg
+        ref={svgRef}
+        width="100%"
+        height={370}
+        style={{ display: "block" }}
+      />
+      <div
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          paddingTop: "10px",
+        }}
+      >
         <p style={brushLabelStyle}>Drag to zoom into a time period</p>
-        <svg ref={brushRef} width="100%" height={60} style={{ display: 'block' }} />
+        <svg
+          ref={brushRef}
+          width="100%"
+          height={60}
+          style={{ display: "block" }}
+        />
       </div>
     </div>
   );
 }
-
 
 function InflectionCallout() {
   return (
@@ -779,7 +864,8 @@ function InflectionCallout() {
             This is the section where the story should feel almost unfair. Mood
             falls, loudness lurches upward, and acoustic texture starts draining
             away in the same era. You are not looking at three unrelated style
-            tweaks. You are watching the blueprint of mainstream music get rewritten.
+            tweaks. You are watching the blueprint of mainstream music get
+            rewritten.
           </p>
         </div>
         <div style={inflectionRight}>
@@ -819,8 +905,8 @@ export default function TrifectaScrollytelling({ data }) {
   const [globalStep, setGlobalStep] = useState(0);
   const [finalPopularity, setFinalPopularity] = useState(70);
   const [brushRange, setBrushRange] = useState(null);
-  const [fieldScrollProgress, setFieldScrollProgress] = useState(
-    () => FIELDS.map((_, index) => (index === 0 ? 0 : 0)),
+  const [fieldScrollProgress, setFieldScrollProgress] = useState(() =>
+    FIELDS.map((_, index) => (index === 0 ? 0 : 0)),
   );
   const stepsRef = useRef([]);
 
@@ -906,8 +992,7 @@ export default function TrifectaScrollytelling({ data }) {
           fieldScrollProgress[index] ?? 0,
           (stepIdx + 0.15) / field.steps.length,
         );
-      }
-      else acc[field.key] = 0;
+      } else acc[field.key] = 0;
       return acc;
     }, {});
   }, [fieldIdx, fieldScrollProgress, stepIdx]);
@@ -1017,14 +1102,6 @@ export default function TrifectaScrollytelling({ data }) {
                   interactiveHover
                 />
               </div>
-
-              <p style={chartHint}>
-                The bright line is the one this paragraph is talking about. The
-                others stay visible so the continuity does not break. This story
-                view is locked to songs with popularity scores of 70 and above so
-                the narrative stays centered on the most visible hits. Hover a
-                line to inspect a year.
-              </p>
               <p style={chartBridge}>{currentStep.bridge}</p>
             </div>
           </div>
@@ -1035,34 +1112,42 @@ export default function TrifectaScrollytelling({ data }) {
 
       <section style={revealSection}>
         <div className="container">
-          <p className="section-label" style={{ color: "#e63946", marginBottom: 12 }}>
+          <p
+            className="section-label"
+            style={{ color: "#e63946", marginBottom: 12 }}
+          >
             The Full Picture
           </p>
-          <h2 className="section-title" style={{ color: "#e8e8f0", marginBottom: "20px" }}>
+          <h2
+            className="section-title"
+            style={{ color: "#e8e8f0", marginBottom: "20px" }}
+          >
             Three shifts.
             <br />
             One new definition of a hit.
           </h2>
           <p className="section-body" style={{ marginBottom: "32px" }}>
-            Once all three lines sit together, the pattern stops feeling abstract.
-            Music grows less sunny, more compressed, and less acoustic over the same
-            stretch of time. Here you can choose how narrowly you want to define
-            mainstream.
+            Once all three lines sit together, the pattern stops feeling
+            abstract. Music grows less sunny, more compressed, and less acoustic
+            over the same stretch of time. Here you can choose how narrowly you
+            want to define mainstream.
           </p>
 
           <div style={finalControlRow}>
             <div>
               <p style={finalControlLabel}>Filter by popularity</p>
               <p style={finalControlBody}>
-                Move this upward to concentrate on the songs that stayed closest to
-                the center of platform listening. Move it downward to bring more of
-                the catalog back into view.
+                Move this upward to concentrate on the songs that stayed closest
+                to the center of platform listening. Move it downward to bring
+                more of the catalog back into view.
               </p>
             </div>
             <div style={finalSliderWrap}>
               <div style={finalSliderHeader}>
                 <span style={finalSliderValue}>0+</span>
-                <span style={finalSliderValue}>{Math.round(finalPopularity)}+</span>
+                <span style={finalSliderValue}>
+                  {Math.round(finalPopularity)}+
+                </span>
               </div>
               <input
                 type="range"
@@ -1071,7 +1156,11 @@ export default function TrifectaScrollytelling({ data }) {
                 step={1}
                 value={finalPopularity}
                 onChange={(event) => setFinalPopularity(+event.target.value)}
-                style={{ width: "100%", accentColor: "#1db954", cursor: "pointer" }}
+                style={{
+                  width: "100%",
+                  accentColor: "#1db954",
+                  cursor: "pointer",
+                }}
               />
             </div>
           </div>
@@ -1238,12 +1327,12 @@ const chartSectionLabel = {
   fontWeight: 600,
 };
 
-const chartHint = {
-  fontSize: "11px",
-  color: "rgba(232,232,240,0.48)",
-  marginTop: "10px",
-  lineHeight: 1.6,
-};
+// const chartHint = {
+//   fontSize: "11px",
+//   color: "rgba(232,232,240,0.48)",
+//   marginTop: "10px",
+//   lineHeight: 1.6,
+// };
 
 const chartBridge = {
   fontSize: "12px",

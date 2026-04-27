@@ -17,10 +17,10 @@ const GENRE_NAMES = [
   "Country",
 ];
 
-const CHORD_WIDTH = 720;
-const CHORD_HEIGHT = 720;
-const outerRadius = Math.min(CHORD_WIDTH, CHORD_HEIGHT) * 0.5 - 110;
-const innerRadius = outerRadius - 20;
+const CHORD_WIDTH = 520;
+const CHORD_HEIGHT = 520;
+const outerRadius = Math.min(CHORD_WIDTH, CHORD_HEIGHT) * 0.5 - 70;
+const innerRadius = outerRadius - 18;
 const STORY_CHORD_SIZE = 288;
 const storyOuterRadius = STORY_CHORD_SIZE * 0.5 - 34;
 const storyInnerRadius = storyOuterRadius - 18;
@@ -373,9 +373,7 @@ function formatMetricDeltaFromBaseline(delta, metric) {
   const points = Math.round(delta * 100);
   if (points === 0) return "Flat vs baseline";
   const betterForParadox =
-    (metric === "valence" || metric === "acousticness")
-      ? points < 0
-      : points > 0;
+    metric === "valence" || metric === "acousticness" ? points < 0 : points > 0;
   return `${betterForParadox ? "+" : "-"}${Math.abs(points)} pts vs baseline`;
 }
 
@@ -390,10 +388,8 @@ function metricDirection(metric, delta) {
   if (Math.abs(delta) < 0.01) {
     if (metric === "valence") return "not clearly darker or brighter";
     if (metric === "loudness") return "not clearly louder or softer";
-    if (metric === "acousticness")
-      return "not clearly more or less acoustic";
-    if (metric === "danceability")
-      return "not clearly more or less danceable";
+    if (metric === "acousticness") return "not clearly more or less acoustic";
+    if (metric === "danceability") return "not clearly more or less danceable";
     return "stable";
   }
 
@@ -419,7 +415,8 @@ function metricSignalLabel(metric) {
 }
 
 function describeMetricSignal(signal) {
-  if (!signal || !signal.meaningful) return "No single metric moves enough to dominate this decade.";
+  if (!signal || !signal.meaningful)
+    return "No single metric moves enough to dominate this decade.";
   if (signal.key === "overlapCount") {
     return `The strongest move is overlap itself: ${signal.rawDelta > 0 ? "+" : ""}${signal.rawDelta.toLocaleString()} shared tracks from the previous decade.`;
   }
@@ -465,7 +462,11 @@ function classifyOverlapTrend(entry, previous, peakOverlap) {
   if (!previous || !entry.isMeaningfulOverlap) return "stable";
   const countDelta = entry.overlapCount - previous.overlapCount;
   const rateDelta = entry.overlapRate - previous.overlapRate;
-  const countThreshold = Math.max(20, peakOverlap * 0.08, previous.overlapCount * 0.2);
+  const countThreshold = Math.max(
+    20,
+    peakOverlap * 0.08,
+    previous.overlapCount * 0.2,
+  );
 
   if (countDelta >= countThreshold || rateDelta >= 0.035) {
     return "accelerating";
@@ -582,7 +583,14 @@ function generateStoryCopy(stat, genreA, genreB, pairConfig) {
   };
 }
 
-function enrichPairDecade(entry, index, story, baseline, peakOverlap, pairConfig) {
+function enrichPairDecade(
+  entry,
+  index,
+  story,
+  baseline,
+  peakOverlap,
+  pairConfig,
+) {
   const previous = story[index - 1] || null;
   const baselineForDelta = entry.isMeaningfulOverlap ? baseline : null;
   const deltaFromPrevious = computeDeltaSet(entry, previous);
@@ -671,8 +679,12 @@ function buildPairStory(decadeData, genreA, genreB, pairConfig) {
   });
 
   const meaningfulStory = story.filter((entry) => entry.isMeaningfulOverlap);
-  const baseline = meaningfulStory[0] || story.find((entry) => entry.shared.count > 0) || story[0];
-  const peakOverlap = d3.max(meaningfulStory, (entry) => entry.overlapCount) || 0;
+  const baseline =
+    meaningfulStory[0] ||
+    story.find((entry) => entry.shared.count > 0) ||
+    story[0];
+  const peakOverlap =
+    d3.max(meaningfulStory, (entry) => entry.overlapCount) || 0;
 
   return story.map((entry, index) =>
     enrichPairDecade(entry, index, story, baseline, peakOverlap, pairConfig),
@@ -825,11 +837,6 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
             })}
           </g>
         </svg>
-        <p style={storyChordNote}>
-          The selected pair stays bright so you can read how it sits inside the
-          broader genre network for this decade. Everything else remains
-          visible, but quieter.
-        </p>
       </div>
 
       <div style={bridgeCard}>
@@ -1681,11 +1688,11 @@ const timelineValue = {
   fontSize: "12px",
 };
 
-const storyChordNote = {
-  color: "rgba(232,232,240,0.58)",
-  fontSize: "0.76rem",
-  lineHeight: 1.45,
-};
+// const storyChordNote = {
+//   color: "rgba(232,232,240,0.58)",
+//   fontSize: "0.76rem",
+//   lineHeight: 1.45,
+// };
 
 const bridgeCard = {
   display: "grid",
@@ -1873,4 +1880,3 @@ const styles = {
     fontSize: "0.95rem",
   },
 };
-
