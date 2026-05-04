@@ -626,11 +626,6 @@ const introBlock = {
   paddingTop: "10vh",
 };
 
-const introNote = {
-  color: "rgba(232,232,240,0.45)",
-  fontSize: "0.9rem",
-  lineHeight: 1.6,
-};
 
 const stepBlock = {
   minHeight: "68vh",

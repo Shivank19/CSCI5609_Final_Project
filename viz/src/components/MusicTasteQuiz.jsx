@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as d3 from "d3";
 import { normalizeLoudness } from "../utils/dataUtils";
 
