@@ -502,19 +502,21 @@ export default function AttributeOnboarding() {
                 <br />
                 the story will keep returning to.
               </h2>
+              <p className="section-body" style={{ marginBottom: "16px" }}>
+                This project explores roughly 170,000 songs released between the
+                1920s and 2020s, using eight audio attributes measured by
+                Spotify&rsquo;s audio analysis engine. Together they let us trace
+                a counterintuitive trend: over the past sixty years, popular music
+                has grown measurably sadder in emotional tone while simultaneously
+                becoming louder, more danceable, and less acoustic. We call this
+                the <em>sadness paradox</em>.
+              </p>
               <p className="section-body" style={{ marginBottom: "12px" }}>
-                As you scroll, each metric takes a turn in the spotlight. The left
-                side explains what it measures and why it matters. The right side
-                pairs it with two representative songs at the high and low ends.
-              </p>
-              <p style={introNote}>
-                The cover art loads from `public/covers/{`attribute_name`}_{`high|low`}`.
-              </p>
-              <p style={introNote}>
-                Optional YouTube embeds can be set in `public/attribute_audio.json`.
-              </p>
-              <p style={introNote}>
-                Attribute card examples can be curated in `public/attribute_examples.json`.
+                As you scroll, each attribute takes a turn in the spotlight. The
+                left side explains what it measures and why it matters to the story.
+                The right side pairs it with two real songs at the high and low
+                ends so you can hear the difference before the data makes the
+                argument.
               </p>
             </div>
 

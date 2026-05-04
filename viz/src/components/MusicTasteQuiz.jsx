@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { normalizeLoudness } from "../utils/dataUtils";
 
@@ -122,11 +122,304 @@ const DECADE_DESCRIPTIONS = {
   },
 };
 
+// ─── Quiz Radar Chart ─────────────────────────────────────────────────────────
+// Spider / radar chart showing all 6 attributes at once.
+// Filled polygon = matched decade real averages (colored).
+// Dashed polygon = user's answers across the same axes.
+// Pure React SVG — no D3 needed.
+
+const RADAR_ATTRS = [
+  { key: "valence", label: "Mood", qFeature: "valence" },
+  { key: "energy", label: "Intensity", qFeature: "energy" },
+  { key: "danceability", label: "Movement", qFeature: "danceability" },
+  { key: "loudness", label: "Volume", qFeature: "loudness" },
+  { key: "acousticness", label: "Vocals", qFeature: "acousticness" },
+  { key: "instrumentalness", label: "Instrumental", qFeature: "instrumentalness" },
+];
+
+function radarPoint(angleDeg, value, R, cx, cy) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: cx + Math.cos(rad) * R * value, y: cy + Math.sin(rad) * R * value };
+}
+
+function toPolygonPoints(values, R, cx, cy) {
+  const n = values.length;
+  return values
+    .map((v, i) => radarPoint((i / n) * 360, v, R, cx, cy))
+    .map((p) => `${p.x},${p.y}`)
+    .join(" ");
+}
+
+function QuizRadarChart({ decadeAverages, winningDecade, answers }) {
+  const SIZE = 300;
+  const cx = SIZE / 2;
+  const cy = SIZE / 2;
+  const R = 108;
+  const n = RADAR_ATTRS.length;
+
+  const decadeColor =
+    DECADES.find((d) => d.decade === winningDecade)?.color || "#1db954";
+  const decadeData = decadeAverages[winningDecade] || {};
+
+  // Decade values (real data)
+  const decadeVals = RADAR_ATTRS.map((attr) => decadeData[attr.key] ?? 0);
+
+  // User values (from quiz answers)
+  const userVals = RADAR_ATTRS.map((attr) => {
+    const qIdx = QUESTIONS.findIndex((q) => q.feature === attr.qFeature);
+    const ans = answers.find((a) => a?.questionIndex === qIdx);
+    return ans?.value ?? 0;
+  });
+
+  const gridRings = [0.25, 0.5, 0.75, 1.0];
+
+  return (
+    <div style={chartWrap}>
+      <div style={chartHeading}>
+        <span style={chartKicker}>Your sound profile vs the {winningDecade}s</span>
+        <p style={chartSub}>
+          All six attributes on one chart.{" "}
+          <span style={{ color: decadeColor, fontWeight: 600 }}>Filled polygon</span>
+          {" = real decade averages · "}
+          <span style={{ color: "rgba(232,232,240,0.8)", fontWeight: 600 }}>
+            Dashed outline
+          </span>{" "}
+          = your answers. Where they overlap is why you matched.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <svg
+          width={SIZE}
+          height={SIZE}
+          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          style={{ overflow: "visible" }}
+        >
+          {/* Grid rings */}
+          {gridRings.map((r) => (
+            <polygon
+              key={r}
+              points={toPolygonPoints(Array(n).fill(r), R, cx, cy)}
+              fill="none"
+              stroke={r === 0.5 ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)"}
+              strokeWidth={r === 0.5 ? 1.5 : 1}
+            />
+          ))}
+
+          {/* Ring labels (25%, 50%, 75%) */}
+          {[0.25, 0.5, 0.75].map((r) => {
+            const p = radarPoint(0, r, R, cx, cy);
+            return (
+              <text
+                key={r}
+                x={p.x + 4}
+                y={p.y}
+                fill="rgba(232,232,240,0.22)"
+                fontSize={8}
+                dominantBaseline="middle"
+              >
+                {Math.round(r * 100)}%
+              </text>
+            );
+          })}
+
+          {/* Axis spokes */}
+          {RADAR_ATTRS.map((attr, i) => {
+            const end = radarPoint((i / n) * 360, 1, R, cx, cy);
+            return (
+              <line
+                key={attr.key}
+                x1={cx}
+                y1={cy}
+                x2={end.x}
+                y2={end.y}
+                stroke="rgba(255,255,255,0.08)"
+                strokeWidth={1}
+              />
+            );
+          })}
+
+          {/* Decade polygon (filled) */}
+          <polygon
+            points={toPolygonPoints(decadeVals, R, cx, cy)}
+            fill={`${decadeColor}28`}
+            stroke={decadeColor}
+            strokeWidth={2}
+            strokeLinejoin="round"
+          />
+
+          {/* Decade dots on each axis */}
+          {decadeVals.map((v, i) => {
+            const p = radarPoint((i / n) * 360, v, R, cx, cy);
+            return (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y}
+                r={3.5}
+                fill={decadeColor}
+                stroke="#0a0a0f"
+                strokeWidth={1}
+              />
+            );
+          })}
+
+          {/* User polygon (dashed outline) */}
+          <polygon
+            points={toPolygonPoints(userVals, R, cx, cy)}
+            fill="rgba(255,255,255,0.06)"
+            stroke="rgba(255,255,255,0.8)"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+            strokeLinejoin="round"
+          />
+
+          {/* User dots on each axis */}
+          {userVals.map((v, i) => {
+            const p = radarPoint((i / n) * 360, v, R, cx, cy);
+            return (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y}
+                r={3}
+                fill="white"
+                stroke="#0a0a0f"
+                strokeWidth={1}
+              />
+            );
+          })}
+
+          {/* Axis labels */}
+          {RADAR_ATTRS.map((attr, i) => {
+            const labelR = R + 20;
+            const p = radarPoint((i / n) * 360, 1, labelR, cx, cy);
+            const anchorAngle = (i / n) * 360;
+            const textAnchor =
+              anchorAngle < 10 || anchorAngle > 350
+                ? "middle"
+                : anchorAngle < 180
+                  ? "start"
+                  : anchorAngle === 180
+                    ? "middle"
+                    : "end";
+            return (
+              <text
+                key={attr.key}
+                x={p.x}
+                y={p.y}
+                textAnchor={textAnchor}
+                dominantBaseline="middle"
+                fill="rgba(232,232,240,0.65)"
+                fontSize={10}
+                fontWeight={600}
+                letterSpacing="0.06em"
+              >
+                {attr.label}
+              </text>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* Legend */}
+      <div style={chartLegend}>
+        <span style={legendDecade(decadeColor)}>
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 2,
+              background: `${decadeColor}28`,
+              border: `2px solid ${decadeColor}`,
+              display: "inline-block",
+              flexShrink: 0,
+            }}
+          />
+          {winningDecade}s real average
+        </span>
+        <span style={legendYou}>
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 2,
+              background: "rgba(255,255,255,0.1)",
+              border: "2px dashed rgba(255,255,255,0.8)",
+              display: "inline-block",
+              flexShrink: 0,
+            }}
+          />
+          Your picks
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const chartWrap = {
+  marginBottom: "36px",
+  padding: "24px",
+  borderRadius: "18px",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.02)",
+};
+
+const chartHeading = {
+  marginBottom: "16px",
+};
+
+const chartKicker = {
+  fontSize: "10px",
+  fontWeight: 700,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+  color: "rgba(232,232,240,0.5)",
+};
+
+const chartSub = {
+  color: "rgba(232,232,240,0.42)",
+  fontSize: "0.78rem",
+  lineHeight: 1.6,
+  marginTop: "6px",
+};
+
+const chartLegend = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "16px",
+  marginTop: "12px",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const legendDecade = (color) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: "7px",
+  color,
+  fontSize: 11,
+  fontWeight: 600,
+});
+
+const legendYou = {
+  display: "flex",
+  alignItems: "center",
+  gap: "7px",
+  color: "rgba(232,232,240,0.75)",
+  fontSize: 11,
+  fontWeight: 600,
+};
+
+
+
+
 function computeDecadeScores(answers, decadeAverages) {
   const scores = {};
   DECADES.forEach((dec) => {
     scores[dec.decade] = 0;
   });
+
 
   answers.forEach((answer) => {
     if (answer === null) return;
@@ -237,6 +530,11 @@ export default function MusicTasteQuiz({ data }) {
           <p className="section-body" style={{ marginBottom: "32px" }}>
             {decadeInfo.body}
           </p>
+          <QuizRadarChart
+            decadeAverages={decadeAverages}
+            winningDecade={winningDecade}
+            answers={answers}
+          />
 
           <div style={statsGrid}>
             {FEATURES.map((feat) => {

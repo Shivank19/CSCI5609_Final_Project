@@ -45,17 +45,17 @@ const GENRE_STORY_PROFILES = {
     texture: "bright studio sheen",
   },
   "Hip Hop / Rap": {
-    identity: "hip hop's rhythmic directness",
+    identity: "rhythmic directness",
     energy: "punchy and grounded",
     texture: "beat-first tension",
   },
   Rock: {
-    identity: "rock's guitar-led momentum",
+    identity: "guitar-led momentum",
     energy: "muscular and open-chested",
     texture: "band-room force",
   },
   Metal: {
-    identity: "metal's hard-edged intensity",
+    identity: "hard-edged intensity",
     energy: "compressed and aggressive",
     texture: "distorted weight",
   },
@@ -65,12 +65,12 @@ const GENRE_STORY_PROFILES = {
     texture: "machine-shaped pulse",
   },
   Indie: {
-    identity: "indie's intimate looseness",
+    identity: "intimate looseness",
     energy: "restless but reflective",
     texture: "handmade edges",
   },
   "R&B / Soul": {
-    identity: "R&B and soul's emotional glide",
+    identity: "emotional glide",
     energy: "smooth and bodily",
     texture: "velvet warmth",
   },
@@ -85,7 +85,7 @@ const GENRE_STORY_PROFILES = {
     texture: "orchestral space",
   },
   Country: {
-    identity: "country storytelling",
+    identity: "storytelling instinct",
     energy: "plainspoken and direct",
     texture: "wood-and-string clarity",
   },
@@ -691,7 +691,7 @@ function buildPairStory(decadeData, genreA, genreB, pairConfig) {
   );
 }
 
-function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
+function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB, scrollRef }) {
   const active =
     storyData[Math.min(activeIndex, storyData.length - 1)] || storyData[0];
   const bridgeStrength = Math.max(0.08, active.overlapRate);
@@ -751,7 +751,7 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB }) {
   };
 
   return (
-    <div style={storyCard}>
+    <div ref={scrollRef} style={storyCard}>
       <div style={storyHeader}>
         <p style={storyEyebrow}>Selected pair</p>
         <div style={genreRow}>
@@ -1173,6 +1173,7 @@ export default function GenreChordDiagram() {
   );
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
   const stepRefs = useRef([]);
+  const storyCardRef = useRef(null);
 
   const selectedPair =
     CURATED_GENRE_PAIRS.find((pair) => pair.id === selectedPairId) ||
@@ -1356,6 +1357,9 @@ export default function GenreChordDiagram() {
   useEffect(() => {
     setActiveStoryIndex(0);
     stepRefs.current = [];
+    if (storyCardRef.current) {
+      storyCardRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }, [selectedPairId]);
 
   useEffect(() => {
@@ -1470,6 +1474,7 @@ export default function GenreChordDiagram() {
                 activeIndex={activeStoryIndex}
                 genreA={selectedGenreA}
                 genreB={selectedGenreB}
+                scrollRef={storyCardRef}
               />
             </div>
           </div>

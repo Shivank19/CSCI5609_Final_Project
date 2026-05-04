@@ -616,12 +616,17 @@ export default function RelationshipScatter({ data, popularity, genre }) {
           <div style={{ height: '20vh' }} />
         </div>
 
-        {/* RIGHT — sticky chart (hidden when sowhat chapter is active) */}
+        {/* RIGHT — sticky chart: always in DOM so D3/ref stays alive;
+            collapses to zero-width when the 'so what' chapter is active
+            so it doesn't create a blank layout gap. */}
         <div style={{
           ...styles.stickyCol,
           opacity: chapter.hideChart ? 0 : 1,
+          width: chapter.hideChart ? 0 : undefined,
+          minWidth: chapter.hideChart ? 0 : undefined,
+          overflow: 'hidden',
           pointerEvents: chapter.hideChart ? 'none' : 'auto',
-          transition: 'opacity 0.4s ease',
+          transition: 'opacity 0.35s ease',
         }}>
           <div style={{
             ...styles.card,
