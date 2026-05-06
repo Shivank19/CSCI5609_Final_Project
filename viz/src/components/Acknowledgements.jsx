@@ -7,6 +7,21 @@ const TEAM = [
   "Shivank Sapra",
 ];
 
+const COURSE_STAFF = [
+  {
+    role: "Professor",
+    name: "Qianwen Wang",
+    email: "qianwen@umn.edu",
+    url: "https://qianwen.info",
+  },
+  {
+    role: "Teaching Assistant",
+    name: "Pan Hao",
+    email: "pan00342@umn.edu",
+    url: "https://ppphhhleo.github.io/",
+  },
+];
+
 const TOOLS = ["React", "D3.js", "Python / Pandas", "Spotify Web API"];
 
 export default function Acknowledgements() {
@@ -60,6 +75,28 @@ export default function Acknowledgements() {
           </div>
         </div>
 
+        {/* Center-Right — Course Staff */}
+        <div style={block}>
+          <p style={eyebrow}>Course Staff</p>
+          <p style={courseLabel}>With thanks to our instructors</p>
+          <div style={staffList}>
+            {COURSE_STAFF.map((person) => (
+              <div key={person.name} style={staffCard}>
+                <span style={staffRole}>{person.role}</span>
+                <a
+                  href={person.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={staffName}
+                >
+                  {person.name} ↗
+                </a>
+                <span style={staffEmail}>{person.email}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Right — Built With */}
         <div style={block}>
           <p style={eyebrow}>Built With</p>
@@ -72,8 +109,6 @@ export default function Acknowledgements() {
           </div>
           <p style={copyrightNote}>
             All data used for academic and educational purposes only.
-            <br />
-            Spotify is a trademark of Spotify AB.
           </p>
         </div>
       </div>
@@ -106,8 +141,8 @@ const inner = {
   margin: "0 auto",
   padding: "72px 32px 48px",
   display: "grid",
-  gridTemplateColumns: "1fr 1fr 1fr",
-  gap: "52px",
+  gridTemplateColumns: "1fr 1fr 1fr 1fr",
+  gap: "40px",
   alignItems: "start",
 };
 
@@ -226,6 +261,40 @@ const copyrightNote = {
   fontSize: "0.76rem",
   lineHeight: 1.7,
   marginTop: "4px",
+};
+
+const staffList = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "14px",
+};
+
+const staffCard = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px",
+};
+
+const staffRole = {
+  fontSize: "9px",
+  fontWeight: 700,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+  color: "rgba(232,232,240,0.3)",
+};
+
+const staffName = {
+  fontSize: "0.88rem",
+  fontWeight: 600,
+  color: "var(--accent)",
+  textDecoration: "none",
+  opacity: 0.86,
+};
+
+const staffEmail = {
+  fontSize: "0.74rem",
+  color: "rgba(232,232,240,0.35)",
+  letterSpacing: "0.02em",
 };
 
 const bottomBar = {

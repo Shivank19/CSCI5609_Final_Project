@@ -1,4 +1,3 @@
-// this file creates a copy for key insights for my genre1 x genre 2 genre correlation part. but my concern is that for multiple decades, th ecopy remains same. I want the flow that I give 5 genre pairs in a dropdown which have the best insights relating to the sadness paradox. From whichever pair I select, the scroll through sections should update the per decade insights dynamically and correctly, and the right should reflect the correct genre chart with only those two highlighted. I need you to tell me how to convey this thing exactly, and then which are the best 5 pairs to show interesting insights relating to the paradox, and then what is the best way to implement this dynamic behavior. FOr example, in the current form, 1960s, 1970s, 1980s all have the same section headings and text
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
@@ -596,23 +595,23 @@ function enrichPairDecade(
   const deltaFromPrevious = computeDeltaSet(entry, previous);
   const deltaFromBaseline = !baselineForDelta
     ? {
-        overlapCount: null,
-        overlapRate: null,
-        valence: null,
-        loudness: null,
-        acousticness: null,
-        danceability: null,
-      }
+      overlapCount: null,
+      overlapRate: null,
+      valence: null,
+      loudness: null,
+      acousticness: null,
+      danceability: null,
+    }
     : entry.decade !== baselineForDelta.decade
       ? computeDeltaSet(entry, baselineForDelta)
       : {
-          overlapCount: 0,
-          overlapRate: 0,
-          valence: 0,
-          loudness: 0,
-          acousticness: 0,
-          danceability: 0,
-        };
+        overlapCount: 0,
+        overlapRate: 0,
+        valence: 0,
+        loudness: 0,
+        acousticness: 0,
+        danceability: 0,
+      };
 
   const enriched = {
     ...entry,
@@ -661,7 +660,7 @@ function buildPairStory(decadeData, genreA, genreB, pairConfig) {
     const overlapRate =
       sharedStats.count && genreAStats.count && genreBStats.count
         ? sharedStats.count /
-          Math.max(1, genreAStats.count + genreBStats.count - sharedStats.count)
+        Math.max(1, genreAStats.count + genreBStats.count - sharedStats.count)
         : 0;
 
     return {
@@ -821,9 +820,8 @@ function GenrePairStoryViz({ storyData, activeIndex, genreA, genreB, scrollRef }
                     strokeWidth={isSelected ? 1.6 : 1}
                   />
                   <text
-                    transform={`rotate(${(labelAngle * 180) / Math.PI - 90}) translate(${labelRadius}) ${
-                      labelAngle > Math.PI ? "rotate(180)" : ""
-                    }`}
+                    transform={`rotate(${(labelAngle * 180) / Math.PI - 90}) translate(${labelRadius}) ${labelAngle > Math.PI ? "rotate(180)" : ""
+                      }`}
                     textAnchor={labelAngle > Math.PI ? "end" : "start"}
                     dy="0.35em"
                     fill={isSelected ? "#f4f4f8" : "rgba(232,232,240,0.44)"}
@@ -1122,11 +1120,10 @@ function LegacyChordExplorer({
                     />
                     <text
                       dy=".35em"
-                      transform={`rotate(${((g.startAngle + g.endAngle) * 90) / Math.PI - 90}) translate(${outerRadius + 15}) ${
-                        (g.startAngle + g.endAngle) / 2 > Math.PI
+                      transform={`rotate(${((g.startAngle + g.endAngle) * 90) / Math.PI - 90}) translate(${outerRadius + 15}) ${(g.startAngle + g.endAngle) / 2 > Math.PI
                           ? "rotate(180) translate(-30)"
                           : ""
-                      }`}
+                        }`}
                       textAnchor={
                         (g.startAngle + g.endAngle) / 2 > Math.PI
                           ? "end"
@@ -1345,11 +1342,11 @@ export default function GenreChordDiagram() {
     () =>
       decadeData
         ? buildPairStory(
-            decadeData,
-            selectedGenreA,
-            selectedGenreB,
-            selectedPair,
-          )
+          decadeData,
+          selectedGenreA,
+          selectedGenreB,
+          selectedPair,
+        )
         : [],
     [decadeData, selectedGenreA, selectedGenreB, selectedPair],
   );
